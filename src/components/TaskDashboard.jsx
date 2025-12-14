@@ -1,13 +1,16 @@
 import axios from 'axios';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const ITEMS_PER_PAGE = 10;
 
 function TaskDashboard() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const abortControllerRef = useRef(null);
 
@@ -25,7 +28,11 @@ function TaskDashboard() {
     tags: '',
   });
 
-  const fetchTasks = async () => {
+  useEffect(() => {
+    setPage(1);
+  }, [filters]);
+
+  const fetchTasks = useCallback(async () => {
     setLoading(true);
 
     if (abortControllerRef.current) {
@@ -37,7 +44,10 @@ function TaskDashboard() {
     try {
       const token = localStorage.getItem('token');
 
-      const params = {};
+      const params = {
+        limit: ITEMS_PER_PAGE,
+        skip: (page - 1) * ITEMS_PER_PAGE,
+      };
       if (filters.search) params.search = filters.search;
       if (filters.priority) params.priority = filters.priority;
       if (filters.status === 'completed') params.completed = true;
@@ -50,6 +60,7 @@ function TaskDashboard() {
       });
 
       setTasks(response.data.tasks);
+      setTotalPages(response.data.pages);
     } catch (err) {
       if (axios.isCancel(err)) {
         console.log('Request canceled:', err.message);
@@ -61,14 +72,14 @@ function TaskDashboard() {
         setLoading(false);
       }
     }
-  };
+  }, [filters, page]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchTasks();
     }, 500);
     return () => clearTimeout(timer);
-  }, [filters]);
+  }, [fetchTasks]);
 
   const handleFormChange = (field, value) => {
     setFormData({
@@ -204,7 +215,7 @@ function TaskDashboard() {
             padding: '8px',
             borderRadius: '4px',
             border: '1px solid #555',
-            backgorundColor: '#333',
+            backgroundColor: '#333',
             color: 'white',
           }}
         >
@@ -223,7 +234,7 @@ function TaskDashboard() {
             padding: '8px',
             borderRadius: '4px',
             border: '1px solid #555',
-            backgorundColor: '#333',
+            backgroundColor: '#333',
             color: 'white',
           }}
         >
@@ -253,6 +264,51 @@ function TaskDashboard() {
         onToggle={toggleTask}
         onDelete={deleteTask}
       />
+      <div
+        style={{
+          marginTop: '20px',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '20px',
+          alignItems: 'center;',
+        }}
+      >
+        <button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1 || loading}
+          style={{
+            padding: '8px 15px',
+            backgroundColor: '#333',
+            border: '1px solid #555',
+            color: 'white',
+            borderRadius: '4px',
+            opacity: page === 1 ? 0.5 : 1,
+            cursor: page === 1 ? 'not-allowed' : 'pointer',
+          }}
+        >
+          Previous
+        </button>
+
+        <span style={{ color: '#aaa' }}>
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages || loading}
+          style={{
+            padding: '8px 15px',
+            backgroundColor: '#333',
+            border: '1px solid #555',
+            color: 'white',
+            borderRadius: '4px',
+            opacity: page === totalPages ? 0.5 : 1,
+            cursor: page === totalPages ? 'not-allowed' : 'pointer',
+          }}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
