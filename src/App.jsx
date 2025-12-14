@@ -75,6 +75,31 @@ function App() {
     }
   }
 
+  const toggleTask = async (taskId, currentStatus) => {
+    try {
+      const token = localStorage.getItem('token')
+      await axios.patch(
+        `${API_URL}/tasks/${taskId}`,
+        {
+          completed: !currentStatus
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      setTasks(tasks.map(task =>
+        task.id === taskId
+        ? { ...task, completed: !currentStatus }
+        : task
+      ))
+    } catch (err) {
+      console.error('Failed to toggle task:', err)
+    }
+  }
+
   useEffect(() => {
     if (isLoggedIn) {
       fetchTasks()
@@ -150,6 +175,16 @@ function App() {
         <ul>
           {tasks.map(task => (
             <li key={task.id}>
+              <input type="checkbox"
+              checked={task.completed} 
+              onChange={() => toggleTask(task.id, task.completed)}
+              />
+              <span style= {{ textDecoration: task.completed ? 'line-through' : 'none' }}>
+                {task.title}
+              </span>
+              <span style={{ color: '#666', marginLeft: '10px' }}>
+                ({task.priority})
+              </span>
               {task.title} - {task.priority}
             </li>
           ))}
