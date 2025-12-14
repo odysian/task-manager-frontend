@@ -100,6 +100,23 @@ function App() {
     }
   }
 
+  const deleteTask = async (taskId) => {
+    try {
+      const token = localStorage.getItem('token')
+      await axios.delete(
+        `${API_URL}/tasks/${taskId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      setTasks(tasks.filter(task => task.id !== taskId))
+    } catch (err) {
+      console.error('Failed to delete task:', err)
+    }
+  }
   useEffect(() => {
     if (isLoggedIn) {
       fetchTasks()
@@ -172,20 +189,30 @@ function App() {
       )}
 
       {!loading && tasks.length > 0 && (
-        <ul>
+        <ul style= {{ listStyle: 'none', padding: 0}}>
           {tasks.map(task => (
-            <li key={task.id}>
+            <li key={task.id} style={{ marginBottom: '10px', display: 'flex', alignItems: 'center'}}>
               <input type="checkbox"
               checked={task.completed} 
               onChange={() => toggleTask(task.id, task.completed)}
               />
-              <span style= {{ textDecoration: task.completed ? 'line-through' : 'none' }}>
+              <span style={{ 
+                textDecoration: task.completed ? 'line-through' : 'none',
+                marginLeft: '10px',
+                flex: 1
+              }}>
                 {task.title}
               </span>
-              <span style={{ color: '#666', marginLeft: '10px' }}>
-                ({task.priority})
+              <span style={{ 
+                color: '#666',
+                fontSize: '12px', 
+                marginLeft: '10px' 
+              }}>
+                {task.priority}
               </span>
-              {task.title} - {task.priority}
+              <button onClick={() => deleteTask(task.id)}>
+                Delete
+              </button>
             </li>
           ))}
         </ul>
