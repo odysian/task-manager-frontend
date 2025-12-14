@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [username, setUsername] = useState('')
@@ -9,12 +11,13 @@ function App() {
 
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(false)
+  const [newTaskTitle, setNewTaskTitle] = useState('')
 
   const handleLogin = async () => {
     try {
       // Try sending as JSON instead
       const response = await axios.post(
-        'http://54.80.178.193:8000/auth/login',
+        `${API_URL}/auth/login`,
         {
           username: username,
           password: password
@@ -34,7 +37,7 @@ function App() {
     setLoading(true)
     try{
       const token = localStorage.getItem('token')
-      const response = await axios.get('http://54.80.178.193:8000/tasks', {
+      const response = await axios.get(`${API_URL}/tasks`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -44,6 +47,31 @@ function App() {
       console.error('Failed to fetch tasks:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const addTask = async () => {
+    if (!newTaskTitle.trim()) return
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await axios.post(
+        `${API_URL}/tasks`,
+        {
+          title: newTaskTitle,
+          priority: 'medium'
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      setTasks([...tasks, response.data])
+      setNewTaskTitle('')
+    } catch (err) {
+      console.error('Failed to create task:', err)
     }
   }
 
@@ -98,6 +126,19 @@ function App() {
       }}>
         Logout
       </button>
+
+      <div style = {{ marginTop: '20px', marginBottom: '20px' }}>
+        <input type="text"
+          placeholder="New task title..."
+          value={newTaskTitle}
+          onChange={(e) =>setNewTaskTitle(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addTask()}
+          style={{ padding: '8px', width: '300px' }}
+        />
+        <button onClick={addTask} style={{ marginLeft: '10px' }}>
+          Add Task
+        </button>
+      </div>
 
       {loading && <p>Loading tasks...</p>}
 
