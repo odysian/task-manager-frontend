@@ -1,3 +1,6 @@
+import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
+
 function LoginForm({
   username,
   password,
@@ -7,6 +10,7 @@ function LoginForm({
   onLogin,
   onSwitchToRegister,
 }) {
+  const [showPassword, setShowPassword] = useState(false);
   const inputClasses =
     'w-full p-3 rounded bg-zinc-900 border border-zinc-700 text-white ' +
     'focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 ' +
@@ -58,14 +62,26 @@ function LoginForm({
             <label className="block text-zinc-500 text-xs font-bold uppercase tracking-wider mb-2">
               Password
             </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => onPasswordChange(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && onLogin()}
-              className={inputClasses}
-            />
+            <div className="relative">
+              {' '}
+              {/* Container for positioning */}
+              <input
+                type={showPassword ? 'text' : 'password'} // Toggles type
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => onPasswordChange(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && onLogin()}
+                className={`${inputClasses} pr-10`} // Added pr-10 (padding-right) so text doesn't hit the icon
+              />
+              <button
+                type="button" // Important: prevents form submission
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+              >
+                {/* Switch icon based on state */}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <button
