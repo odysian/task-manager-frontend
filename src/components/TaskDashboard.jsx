@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import api from '../api';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const ITEMS_PER_PAGE = 10;
 
-function TaskDashboard() {
+function TaskDashboard({ onLogout }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -50,8 +50,6 @@ function TaskDashboard() {
     const newController = new AbortController();
     abortControllerRef.current = newController;
     try {
-      const token = localStorage.getItem('token');
-
       const params = {
         limit: ITEMS_PER_PAGE,
         skip: (page - 1) * ITEMS_PER_PAGE,
@@ -61,8 +59,7 @@ function TaskDashboard() {
       if (filters.status === 'completed') params.completed = true;
       if (filters.status === 'pending') params.completed = false;
 
-      const response = await axios.get(`${API_URL}/tasks`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get('/tasks', {
         params: params,
         signal: newController.signal,
       });
@@ -75,6 +72,9 @@ function TaskDashboard() {
         return;
       }
       console.error('Failed to fetch tasks:', err);
+      if (!axios.isCancel(err)) {
+        setError('Could not load tasks.');
+      }
     } finally {
       if (abortControllerRef.current === newController) {
         setLoading(false);
@@ -84,10 +84,7 @@ function TaskDashboard() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/tasks/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get('/tasks/stats');
       setStats(response.data);
     } catch (err) {
       console.error('Failed to fetch stats:', err);
@@ -113,8 +110,6 @@ function TaskDashboard() {
     if (!formData.title.trim()) return;
 
     try {
-      const token = localStorage.getItem('token');
-
       const taskData = {
         title: formData.title,
         description: formData.description || undefined,
@@ -125,11 +120,7 @@ function TaskDashboard() {
           : [],
       };
 
-      const response = await axios.post(`${API_URL}/tasks`, taskData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.post('/tasks', taskData);
 
       setTasks([...tasks, response.data]);
       setFormData({
@@ -147,18 +138,9 @@ function TaskDashboard() {
 
   const toggleTask = async (taskId, currentStatus) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.patch(
-        `${API_URL}/tasks/${taskId}`,
-        {
-          completed: !currentStatus,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await api.patch(`/tasks/${taskId}`, {
+        completed: !currentStatus,
+      });
 
       setTasks(
         tasks.map((task) =>
@@ -173,11 +155,7 @@ function TaskDashboard() {
 
   const updateTask = async (taskId, updatedData) => {
     try {
-      const token = localStorage.getItem('token');
-
-      await axios.patch(`${API_URL}/tasks/${taskId}`, updatedData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.patch(`/tasks/${taskId}`, updatedData);
 
       fetchTasks();
       fetchStats();
@@ -189,12 +167,7 @@ function TaskDashboard() {
 
   const deleteTask = async (taskId) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/tasks/${taskId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await api.delete(`/tasks/${taskId}`);
 
       setTasks(tasks.filter((task) => task.id !== taskId));
       fetchStats();
@@ -214,11 +187,43 @@ function TaskDashboard() {
     'hover:bg-emerald-900/50 hover:text-white hover:border-emerald-500 ' +
     'transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
 
-  // Special class for the "Page X" highlight
   const highlightClass = 'text-emerald-400 font-bold';
 
   return (
     <div>
+      {/* HEADER MOVED FROM APP.JSX */}
+      <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-zinc-800 pb-6 gap-4">
+        <div className="flex items-center gap-4">
+          <span className="text-4xl text-emerald-500 filter drop-shadow-[0_0_10px_rgba(16,185,129,0.9)] pr-1">
+            ⟡
+          </span>
+
+          <div className="flex flex-col">
+            <h1 className="text-3xl font-black tracking-tight text-white leading-none">
+              FAROS
+            </h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="h-px w-6 bg-emerald-500/50"></span>
+              <p className="text-[0.65rem] text-emerald-500 font-bold tracking-[0.2em] uppercase">
+                Navigate your backlog
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-zinc-500 hidden md:block">
+            Welcome back
+          </span>
+          <button
+            onClick={onLogout}
+            className="px-4 py-2 text-xs font-bold text-zinc-400 hover:text-white hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-lg transition-all"
+          >
+            Sign Out
+          </button>
+        </div>
+      </header>
+
       {/* ERROR BANNER */}
       {error && (
         <div className="mb-6 p-4 bg-red-950/20 border border-red-900/50 rounded-lg flex justify-between items-center text-red-400 animate-in fade-in slide-in-from-top-2">
@@ -235,7 +240,7 @@ function TaskDashboard() {
         </div>
       )}
 
-      {/* 2. STATS HUD (Compact + Slim Desktop) */}
+      {/* STATS HUD */}
       <div className="grid grid-cols-4 gap-2 mb-8">
         {/* Total */}
         <div className="p-2 md:py-3 md:px-4 bg-zinc-900/50 border border-zinc-800 rounded-lg text-center md:text-left">
@@ -247,7 +252,7 @@ function TaskDashboard() {
           </p>
         </div>
 
-        {/* Done */}
+        {/*XY Done */}
         <div className="p-2 md:py-3 md:px-4 bg-emerald-950/10 border border-emerald-900/20 rounded-lg text-center md:text-left">
           <p className="text-emerald-500/70 text-[10px] font-bold uppercase tracking-wider mb-0 truncate">
             Done
