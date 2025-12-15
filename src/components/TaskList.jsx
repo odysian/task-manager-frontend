@@ -1,6 +1,6 @@
 import TaskCard from './TaskCard';
 
-function TaskList({ tasks, loading, onToggle, onDelete }) {
+function TaskList({ tasks, loading, onToggle, onDelete, onUpdate }) {
   if (loading) {
     return <p>Loading tasks...</p>;
   }
@@ -17,6 +17,7 @@ function TaskList({ tasks, loading, onToggle, onDelete }) {
           task={task}
           onToggle={onToggle}
           onDelete={onDelete}
+          onUpdate={onUpdate}
         />
       ))}
     </ul>

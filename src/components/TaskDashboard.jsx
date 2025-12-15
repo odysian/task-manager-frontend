@@ -11,6 +11,7 @@ function TaskDashboard() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [error, setError] = useState('');
 
   const abortControllerRef = useRef(null);
 
@@ -148,6 +149,22 @@ function TaskDashboard() {
     }
   };
 
+  const updateTask = async (taskId, updatedData) => {
+    try {
+      const token = localStorage.getItem('token');
+
+      await axios.patch(`${API_URL}/tasks/${taskId}`, updatedData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      fetchTasks();
+      // fetchStats(); // Uncomment this later
+    } catch (err) {
+      console.error('Failed to update task:', err);
+      setError('Failed to save changes. Please try again.');
+    }
+  };
+
   const deleteTask = async (taskId) => {
     try {
       const token = localStorage.getItem('token');
@@ -166,7 +183,7 @@ function TaskDashboard() {
   // Styles
   const inputClasses =
     'p-2 rounded bg-zinc-900 border border-zinc-700 text-white ' +
-    'focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 ' + // Glowing Green Focus
+    'focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 ' +
     'focus:outline-none transition-all placeholder-zinc-500';
 
   const buttonClasses =
@@ -187,7 +204,7 @@ function TaskDashboard() {
 
       <div className="my-8 border-t border-neutral-800" />
 
-      {/* New Filter Bar UI */}
+      {/* Filter Bar UI */}
       <div className="flex flex-wrap gap-4 p-4 mb-6 bg-zinc-900/50 border border-emerald-900/30 rounded-lg items-center">
         <input
           type="text"
@@ -237,6 +254,7 @@ function TaskDashboard() {
         loading={loading}
         onToggle={toggleTask}
         onDelete={deleteTask}
+        onUpdate={updateTask}
       />
       <div className="mt-6 flex justify-center gap-4 items-center text-zinc-400">
         <button

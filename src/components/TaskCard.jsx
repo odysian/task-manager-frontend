@@ -1,25 +1,34 @@
 import { useState } from 'react';
 
-function TaskCard({ task, onToggle, onDelete }) {
-  // 1. STATE: Tracks if the card details are visible
+function TaskCard({ task, onToggle, onDelete, onUpdate }) {
+  // Tracks if the card details are visible
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
-  // 2. LOGIC: Check if task is overdue (Past due date AND not completed)
+  const [editForm, setEditForm] = useState({
+    title: task.title,
+    description: task.description || '',
+    priority: task.priority,
+    due_date: task.due_date ? task.due_date.split('T')[0] : '',
+    tags: task.tags ? task.tags.join(', ') : '',
+  });
+
+  // Check if task is overdue
   const isOverdue =
     task.due_date && !task.completed && new Date(task.due_date) < new Date();
 
-  // 3. STYLES: Extracted to keep JSX clean
+  // Styles
   const styles = {
     card: 'group bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden transition-all hover:border-emerald-500/50 shadow-sm',
 
-    // The main clickable row
+    // Main clickable row
     header:
       'flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-800/50 transition-colors',
 
     checkbox:
       'w-5 h-5 accent-emerald-500 cursor-pointer rounded bg-zinc-800 border-zinc-600 focus:ring-emerald-500',
 
-    // The hidden details section
+    // Hidden details section
     detailsContainer:
       'px-14 pb-4 pt-0 text-sm animate-in slide-in-from-top-2 duration-200',
     detailsGrid:
@@ -28,17 +37,137 @@ function TaskCard({ task, onToggle, onDelete }) {
     // Text labels
     label: 'text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1',
 
-    // The Delete button (hidden until hover)
+    // Delete button (hidden until hover)
     deleteBtn:
       'cursor-pointer p-2 text-zinc-500 hover:text-red-400 hover:bg-red-950/30 rounded transition-all opacity-0 group-hover:opacity-100',
   };
 
-  // Dynamic colors for Priority Badges
+  // Colors for Priority Badges
   const priorityColors = {
     high: 'border-l-red-500 text-red-400 bg-red-950/30',
     medium: 'border-l-yellow-500 text-yellow-400 bg-yellow-950/30',
     low: 'border-l-emerald-500 text-emerald-400 bg-emerald-950/30',
   };
+
+  const handleSave = () => {
+    const tagArray = editForm.tags
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t);
+
+    onUpdate(task.id, {
+      ...editForm,
+      tags: tagArray,
+    });
+
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditForm({
+      title: task.title,
+      description: task.description || '',
+      priority: task.priority,
+      due_date: task.due_date ? task.due_date.split('T')[0] : '',
+      tags: task.tags ? task.tags.join(', ') : '',
+    });
+    setIsEditing(false);
+  };
+
+  // --- RENDER: EDIT MODE ---
+  if (isEditing) {
+    return (
+      <div className={`${styles.card} p-4 border-emerald-500/50`}>
+        <div className="space-y-3">
+          {/* Title Input */}
+          <div>
+            <label className={styles.label}>Title</label>
+            <input
+              type="text"
+              value={editForm.title}
+              onChange={(e) =>
+                setEditForm({ ...editForm, title: e.target.value })
+              }
+              className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-white focus:border-emerald-500 focus:outline-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Priority Select */}
+            <div>
+              <label className={styles.label}>Priority</label>
+              <select
+                value={editForm.priority}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, priority: e.target.value })
+                }
+                className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-white focus:border-emerald-500 focus:outline-none"
+              >
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+
+            {/* Due Date Input */}
+            <div>
+              <label className={styles.label}>Due Date</label>
+              <input
+                type="date"
+                value={editForm.due_date}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, due_date: e.target.value })
+                }
+                className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-white focus:border-emerald-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Description Textarea */}
+          <div>
+            <label className={styles.label}>Description</label>
+            <textarea
+              value={editForm.description}
+              onChange={(e) =>
+                setEditForm({ ...editForm, description: e.target.value })
+              }
+              className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-white focus:border-emerald-500 focus:outline-none resize-y min-h-[80px]"
+            />
+          </div>
+
+          {/* Tags Input */}
+          <div>
+            <label className={styles.label}>Tags (comma separated)</label>
+            <input
+              type="text"
+              value={editForm.tags}
+              onChange={(e) =>
+                setEditForm({ ...editForm, tags: e.target.value })
+              }
+              placeholder="dev, urgent, meeting"
+              className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-white focus:border-emerald-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              onClick={handleCancel}
+              className="px-3 py-1.5 text-xs font-bold text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded transition-colors shadow-lg shadow-emerald-900/20"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.card}>
@@ -101,16 +230,19 @@ function TaskCard({ task, onToggle, onDelete }) {
             {task.priority}
           </span>
 
-          {/* Visual Indicator (Rotates when open) */}
-          <span
-            className="text-zinc-600 text-xs transition-transform duration-200"
-            style={{
-              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+          {/* Edit Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsEditing(true);
             }}
+            className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-950/30 rounded transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+            title="Edit Task"
           >
-            ▼
-          </span>
+            ✎
+          </button>
 
+          {/* Delete Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -121,6 +253,16 @@ function TaskCard({ task, onToggle, onDelete }) {
           >
             ✖
           </button>
+
+          {/* Expand Arrow */}
+          <span
+            className="text-zinc-600 text-xs transition-transform duration-200 ml-1"
+            style={{
+              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          >
+            ▼
+          </span>
         </div>
       </div>
 
