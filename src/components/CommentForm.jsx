@@ -1,0 +1,76 @@
+import { Send } from 'lucide-react';
+import { useState } from 'react';
+
+function CommentForm({
+  onSubmit,
+  initialValue = '',
+  isEditing = false,
+  onCancel,
+}) {
+  const [content, setContent] = useState(initialValue);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!content.trim()) return;
+
+    try {
+      await onSubmit(content);
+      setContent('');
+
+      if (isEditing && onCancel) onCancel();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const baseClasses =
+    'w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder-zinc-600 resize-none';
+
+  return (
+    <form onSubmit={handleSubmit} className="relative group">
+      <textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        placeholder={isEditing ? 'Update your comment...' : 'Add a comment...'}
+        // If editing, make it smaller, if new, make it bigger
+        className={`${baseClasses} ${isEditing ? 'min-h-20' : 'min-h-25'}`}
+        disabled={isSubmitting} // Disable typing while sending
+      />
+
+      <div className="flex justify-end gap-2 mt-2">
+        {/* Only show Cancel button if we are in Edit Mode */}
+        {isEditing && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+        )}
+
+        <button
+          type="submit"
+          // Disable if empty OR if currently sending
+          disabled={!content.trim() || isSubmitting}
+          className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-1.5 rounded-md text-xs font-bold flex items-center gap-2 transition-all"
+        >
+          {isSubmitting ? (
+            // Simple CSS spinner
+            <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              {isEditing ? 'Save' : 'Post'} <Send size={12} />
+            </>
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+export default CommentForm;

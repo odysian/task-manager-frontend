@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CommentsSection from './CommentsSection';
 
 function TaskCard({ task, onToggle, onDelete, onUpdate }) {
   // Tracks if the card details are visible
@@ -368,6 +369,7 @@ function TaskCard({ task, onToggle, onDelete, onUpdate }) {
               </div>
             )}
           </div>
+          <CommentsSection taskId={task.id} />
         </div>
       )}
     </div>

@@ -20,6 +20,7 @@ function App() {
       });
 
       localStorage.setItem('token', response.data.access_token);
+      localStorage.setItem('username', username);
       setCurrentView('dashboard');
       setError('');
     } catch (err) {
@@ -46,6 +47,7 @@ function App() {
       });
 
       localStorage.setItem('token', response.data.access_token);
+      localStorage.setItem('username', regUsername);
       setCurrentView('dashboard');
       setError('');
     } catch (err) {
@@ -59,6 +61,7 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('username');
     setUsername('');
     setPassword('');
     setCurrentView('login');
