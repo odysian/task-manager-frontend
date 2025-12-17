@@ -1,6 +1,6 @@
 import TaskCard from './TaskCard';
 
-function TaskList({ tasks, loading, onToggle, onDelete, onUpdate }) {
+function TaskList({ tasks, loading, onToggle, onDelete, onUpdate, isOwner }) {
   // LOADING STATE
   if (loading) {
     return (
@@ -43,6 +43,7 @@ function TaskList({ tasks, loading, onToggle, onDelete, onUpdate }) {
           onToggle={onToggle}
           onDelete={onDelete}
           onUpdate={onUpdate}
+          isOwner={isOwner}
         />
       ))}
     </div>
