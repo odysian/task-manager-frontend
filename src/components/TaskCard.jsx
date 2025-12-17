@@ -18,50 +18,15 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
     tags: task.tags ? task.tags.join(', ') : '',
   });
 
+  // Effects
   useEffect(() => {
     setShareCount(task.share_count || 0);
   }, [task.share_count]);
 
-  // Helpers
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const safeDateString = dateString.endsWith('Z')
-      ? dateString
-      : dateString + 'Z';
-    const date = new Date(safeDateString);
-    if (isNaN(date.getTime())) return dateString;
-    return date.toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-  };
-
+  // Permissions & Status
+  const canEdit = isOwner || task.my_permission === 'edit';
   const isOverdue =
     task.due_date && !task.completed && new Date(task.due_date) < new Date();
-
-  // Handlers
-  const handleSave = () => {
-    const tagArray = editForm.tags
-      .split(',')
-      .map((t) => t.trim())
-      .filter((t) => t);
-    onUpdate(task.id, { ...editForm, tags: tagArray });
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditForm({
-      title: task.title,
-      description: task.description || '',
-      priority: task.priority,
-      due_date: task.due_date ? task.due_date.split('T')[0] : '',
-      tags: task.tags ? task.tags.join(', ') : '',
-    });
-    setIsEditing(false);
-  };
 
   // Styles & Config
   const styles = {
@@ -75,7 +40,7 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
       'pt-4 border-t border-zinc-800/50 grid grid-cols-1 md:grid-cols-2 gap-4',
     label: 'text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1',
     deleteBtn:
-      'cursor-pointer p-2 text-zinc-500 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100',
+      'cursor-pointer p-2 text-zinc-500 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-all',
     badge:
       'px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border shrink-0',
   };
@@ -101,6 +66,48 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
   const containerClass = task.completed
     ? 'group bg-emerald-950/10 border border-emerald-500/10 rounded-lg overflow-hidden transition-all shadow-sm opacity-60 hover:opacity-100'
     : 'group bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden transition-all hover:border-emerald-500/50 shadow-sm';
+
+  // Helpers
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const safeDate = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+    const date = new Date(safeDate);
+    return isNaN(date.getTime())
+      ? dateString
+      : date.toLocaleString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        });
+  };
+
+  const handleSave = () => {
+    const tagArray = editForm.tags
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t);
+
+    onUpdate(task.id, {
+      ...editForm,
+      tags: tagArray,
+      due_date: editForm.due_date || null,
+    });
+
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditForm({
+      title: task.title,
+      description: task.description || '',
+      priority: task.priority,
+      due_date: task.due_date ? task.due_date.split('T')[0] : '',
+      tags: task.tags ? task.tags.join(', ') : '',
+    });
+    setIsEditing(false);
+  };
 
   // Render: Edit Mode
   if (isEditing) {
@@ -134,7 +141,6 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
                 <option value="low">Low</option>
               </select>
             </div>
-
             <div>
               <label className={styles.label}>Due Date</label>
               <input
@@ -195,7 +201,7 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
   return (
     <div className={containerClass}>
       <div className={styles.header} onClick={() => setIsExpanded(!isExpanded)}>
-        {/* Task Content */}
+        {/* Left Side: Checkbox + Info */}
         <div className="flex items-center gap-4 flex-1 min-w-0">
           <input
             type="checkbox"
@@ -218,6 +224,7 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
               </span>
             </div>
 
+            {/* Meta Row: Badges & Tags */}
             <div className="flex flex-wrap items-center gap-2 mt-1.5">
               <span className={`${styles.badge} ${currentPriority.class}`}>
                 {currentPriority.label}
@@ -232,7 +239,6 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
               )}
 
               {task.tags &&
-                task.tags.length > 0 &&
                 task.tags.map((tag, i) => (
                   <span
                     key={i}
@@ -245,9 +251,10 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Right Side: Actions */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          {(isOwner || !isOwner) && isOwner && (
+          {/* Share: Owners Only */}
+          {isOwner && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -272,31 +279,21 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
             </button>
           )}
 
-          {(isOwner || !isOwner) && (
+          {/* Edit: Owners + Editors Only */}
+          {canEdit && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (!isOwner && task.my_permission !== 'edit') return;
                 setIsEditing(true);
               }}
-              disabled={!isOwner && task.my_permission !== 'edit'}
-              className={`p-2 rounded-lg transition-all ${
-                !isOwner && task.my_permission !== 'edit'
-                  ? 'text-zinc-600 cursor-not-allowed'
-                  : 'text-zinc-400 hover:text-emerald-400 hover:bg-emerald-950/30 opacity-100 md:opacity-0 md:group-hover:opacity-100 cursor-pointer'
-              }`}
-              title={
-                isOwner
-                  ? 'Edit Task'
-                  : task.my_permission === 'edit'
-                  ? 'Edit Task (Collaborator)'
-                  : 'View Only (No Edit Access)'
-              }
+              className="p-2 rounded-lg transition-all text-zinc-400 hover:text-emerald-400 hover:bg-emerald-950/30 cursor-pointer"
+              title={isOwner ? 'Edit Task' : 'Edit Task (Collaborator)'}
             >
               <Pencil size={16} />
             </button>
           )}
 
+          {/* Delete: Owners Only */}
           {isOwner && (
             <button
               onClick={(e) => {

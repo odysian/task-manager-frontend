@@ -333,7 +333,7 @@ function TaskDashboard({ onLogout }) {
               }
               className={inputClasses}
             >
-              <option value="">All Priorities</option>
+              <option value="">Priority</option>
               <option value="high">High</option>
               <option value="medium">Medium</option>
               <option value="low">Low</option>
@@ -345,7 +345,7 @@ function TaskDashboard({ onLogout }) {
               }
               className={inputClasses}
             >
-              <option value="">All Statuses</option>
+              <option value="">Status</option>
               <option value="pending">Pending</option>
               <option value="completed">Completed</option>
             </select>
