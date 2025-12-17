@@ -50,7 +50,7 @@ function CommentItem({ comment, onDelete, onUpdate }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-emerald-400">
-              {comment.author?.username || 'Unknown User'}
+              {comment.username || 'Unknown'}
             </span>
             <span className="text-[10px] text-zinc-500">
               {formatDate(comment.created_at)}

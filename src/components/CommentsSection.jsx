@@ -35,16 +35,9 @@ function CommentsSection({ taskId }) {
     try {
       const response = await api.post(`/tasks/${taskId}/comments`, { content });
 
-      const enrichedComment = {
-        ...response.data,
-        author: {
-          username: localStorage.getItem('username') || 'Me',
-        },
-      };
-
       // STATE UPDATE: Add the new comment to the START of the array
       // [newComment, ...oldComments]
-      setComments((prev) => [enrichedComment, ...prev]);
+      setComments((prev) => [response.data, ...prev]);
 
       return true; // Tell the form "Success! You can clear the text box now."
     } catch (err) {
