@@ -373,7 +373,7 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
               )}
             </div>
           </div>
-          <CommentsSection taskId={task.id} />
+          <CommentsSection taskId={task.id} isTaskOwner={isOwner} />
         </div>
       )}
 

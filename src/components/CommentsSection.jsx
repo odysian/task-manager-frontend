@@ -4,7 +4,7 @@ import api from '../api'; // Your centralized API handler
 import CommentForm from './CommentForm'; // For adding NEW comments
 import CommentItem from './CommentItem'; // For displaying EXISTING comments
 
-function CommentsSection({ taskId }) {
+function CommentsSection({ taskId, isTaskOwner }) {
   const [comments, setComments] = useState([]);
 
   const [loading, setLoading] = useState(false);
@@ -122,6 +122,7 @@ function CommentsSection({ taskId }) {
             comment={comment}
             onDelete={handleDeleteComment}
             onUpdate={handleUpdateComment}
+            isTaskOwner={isTaskOwner}
           />
         ))}
       </div>

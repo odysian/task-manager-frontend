@@ -2,9 +2,8 @@ import { Pencil, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
 import CommentForm from './CommentForm';
 
-function CommentItem({ comment, onDelete, onUpdate }) {
+function CommentItem({ comment, onDelete, onUpdate, isTaskOwner }) {
   const [isEditing, setIsEditing] = useState(false);
-
   const currentUser = localStorage.getItem('username');
 
   const formatDate = (dateString) => {
@@ -16,19 +15,26 @@ function CommentItem({ comment, onDelete, onUpdate }) {
     });
   };
 
-  const isOwner = currentUser && comment.username === currentUser;
+  // --- PERMISSION LOGIC ---
+  const isCommentAuthor = currentUser && comment.username === currentUser;
 
-  // LOGIC: If editing, return the Form instead of the normal display
+  // Can Edit: Only the original author
+  const canEdit = isCommentAuthor;
+
+  // Can Delete: The author OR the owner of the task
+  const canDelete = isCommentAuthor || isTaskOwner;
+  // ------------------------
+
   if (isEditing) {
     return (
       <div className="mb-4">
         <CommentForm
-          initialValue={comment.content} // Pre-fill with existing text
-          isEditing={true} // Tell form to show "Save" button
-          onCancel={() => setIsEditing(false)} // Let user cancel
+          initialValue={comment.content}
+          isEditing={true}
+          onCancel={() => setIsEditing(false)}
           onSubmit={(newContent) => {
-            onUpdate(comment.id, newContent); // Call parent update function
-            setIsEditing(false); // Switch back to view mode
+            onUpdate(comment.id, newContent);
+            setIsEditing(false);
           }}
         />
       </div>
@@ -37,16 +43,13 @@ function CommentItem({ comment, onDelete, onUpdate }) {
 
   return (
     <div className="group flex gap-3 p-3 rounded-lg hover:bg-zinc-900/50 transition-colors">
-      {/* 1. Avatar (Left) */}
       <div className="shrink-0 mt-1">
         <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
           <User size={14} className="text-zinc-400" />
         </div>
       </div>
 
-      {/* 2. Content Body (Right) */}
       <div className="flex-1 space-y-1">
-        {/* Header Row: Username + Date + Buttons */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-emerald-400">
@@ -57,9 +60,9 @@ function CommentItem({ comment, onDelete, onUpdate }) {
             </span>
           </div>
 
-          {/* Action Buttons: Only show on hover (group-hover) */}
-          {isOwner && (
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* EDIT BUTTON (Author Only) */}
+            {canEdit && (
               <button
                 onClick={() => setIsEditing(true)}
                 className="p-1.5 text-zinc-500 hover:text-emerald-400"
@@ -67,6 +70,10 @@ function CommentItem({ comment, onDelete, onUpdate }) {
               >
                 <Pencil size={12} />
               </button>
+            )}
+
+            {/* DELETE BUTTON (Author OR Task Owner) */}
+            {canDelete && (
               <button
                 onClick={() => onDelete(comment.id)}
                 className="p-1.5 text-zinc-500 hover:text-red-400"
@@ -74,11 +81,10 @@ function CommentItem({ comment, onDelete, onUpdate }) {
               >
                 <Trash2 size={12} />
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* The Actual Comment Text */}
         <div className="text-sm text-zinc-300 whitespace-pre-wrap">
           {comment.content}
         </div>
