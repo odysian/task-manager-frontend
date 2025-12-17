@@ -1,6 +1,7 @@
 import { ChevronDown, Pencil, Trash2, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import CommentsSection from './CommentsSection';
+import FilesSection from './FilesSection';
 import ShareModal from './ShareModal';
 
 function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
@@ -374,6 +375,12 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
             </div>
           </div>
           <CommentsSection taskId={task.id} isTaskOwner={isOwner} />
+          <FilesSection
+            taskId={task.id}
+            isExpanded={isExpanded}
+            canUpload={canEdit}
+            canDelete={canEdit}
+          />
         </div>
       )}
 
