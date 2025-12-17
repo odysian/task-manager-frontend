@@ -7,15 +7,13 @@ import TaskList from './TaskList';
 const ITEMS_PER_PAGE = 10;
 
 function TaskDashboard({ onLogout }) {
-  // --- STATE MANAGEMENT ---
+  // State
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState('');
-
-  // NEW: Tracks which tab is active ('personal' or 'shared')
-  const [view, setView] = useState('personal');
+  const [view, setView] = useState('personal'); // 'personal' | 'shared'
 
   const [stats, setStats] = useState({
     total: 0,
@@ -40,17 +38,23 @@ function TaskDashboard({ onLogout }) {
 
   const abortControllerRef = useRef(null);
 
-  // Reset page when switching views or filters
+  // Effects
   useEffect(() => {
     setPage(1);
   }, [filters, view]);
 
-  // --- API HANDLERS ---
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchTasks();
+      fetchStats();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [filters, page, view]);
 
+  // Data Fetching
   const fetchTasks = useCallback(async () => {
     setLoading(true);
 
-    // Cancel previous request if it's still running
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -59,34 +63,32 @@ function TaskDashboard({ onLogout }) {
     abortControllerRef.current = newController;
 
     try {
-      // LOGIC BRANCH: Choose endpoint based on current view
       if (view === 'shared') {
         const response = await api.get('/tasks/shared-with-me', {
           signal: newController.signal,
         });
 
-        // FIX: Flatten the response
-        // Take the inner 'task' object and add 'my_permission' to it
+        // Flatten nested response structure for the UI
         const formattedTasks = response.data.map((wrapper) => ({
-          ...wrapper.task, // Spread the task properties (id, title, etc.)
-          my_permission: wrapper.permission, // Add permission so the card can see it
+          ...wrapper.task,
+          my_permission: wrapper.permission,
+          owner_username: wrapper.owner_username,
         }));
 
         setTasks(formattedTasks);
         setTotalPages(1);
       } else {
-        // Personal tasks endpoint (Standard pagination/filtering)
         const params = {
           limit: ITEMS_PER_PAGE,
           skip: (page - 1) * ITEMS_PER_PAGE,
+          ...(filters.search && { search: filters.search }),
+          ...(filters.priority && { priority: filters.priority }),
+          ...(filters.status === 'completed' && { completed: true }),
+          ...(filters.status === 'pending' && { completed: false }),
         };
-        if (filters.search) params.search = filters.search;
-        if (filters.priority) params.priority = filters.priority;
-        if (filters.status === 'completed') params.completed = true;
-        if (filters.status === 'pending') params.completed = false;
 
         const response = await api.get('/tasks', {
-          params: params,
+          params,
           signal: newController.signal,
         });
 
@@ -94,9 +96,10 @@ function TaskDashboard({ onLogout }) {
         setTotalPages(response.data.pages);
       }
     } catch (err) {
-      if (err.name === 'CanceledError') return;
-      console.error('Failed to fetch tasks:', err);
-      setError('Could not load tasks.');
+      if (err.name !== 'CanceledError') {
+        console.error('Failed to fetch tasks:', err);
+        setError('Could not load tasks.');
+      }
     } finally {
       if (abortControllerRef.current === newController) {
         setLoading(false);
@@ -105,7 +108,6 @@ function TaskDashboard({ onLogout }) {
   }, [filters, page, view]);
 
   const fetchStats = useCallback(async () => {
-    // Only fetch stats for personal dashboard
     if (view === 'shared') return;
 
     try {
@@ -116,16 +118,7 @@ function TaskDashboard({ onLogout }) {
     }
   }, [view]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchTasks();
-      fetchStats();
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [fetchTasks, fetchStats]);
-
-  // --- TASK ACTIONS ---
-
+  // Task Operations
   const handleFormChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
   };
@@ -145,7 +138,6 @@ function TaskDashboard({ onLogout }) {
 
       const response = await api.post('/tasks', taskData);
 
-      // If we are in 'shared' view, switch back to 'personal' so the user sees their new task
       if (view === 'shared') {
         setView('personal');
       } else {
@@ -199,7 +191,7 @@ function TaskDashboard({ onLogout }) {
     }
   };
 
-  // --- STYLES ---
+  // Styles
   const inputClasses =
     'p-2 rounded bg-zinc-900 border border-zinc-700 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all placeholder-zinc-500';
   const buttonClasses =
@@ -208,7 +200,7 @@ function TaskDashboard({ onLogout }) {
 
   return (
     <div>
-      {/* 1. HEADER & LOGOUT */}
+      {/* Header */}
       <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-zinc-800 pb-6 gap-4">
         <div className="flex items-center gap-4">
           <span className="text-4xl text-emerald-500 filter drop-shadow-[0_0_10px_rgba(16,185,129,0.9)] pr-1">
@@ -237,7 +229,7 @@ function TaskDashboard({ onLogout }) {
         </div>
       </header>
 
-      {/* ERROR BANNER */}
+      {/* Error Boundary */}
       {error && (
         <div className="mb-6 p-4 bg-red-950/20 border border-red-900/50 rounded-lg flex justify-between items-center text-red-400">
           <div className="flex items-center gap-3">
@@ -250,33 +242,27 @@ function TaskDashboard({ onLogout }) {
         </div>
       )}
 
-      {/* 2. VIEW TOGGLE (Tabs) */}
+      {/* View Toggle */}
       <div className="flex justify-center mb-8">
         <div className="flex bg-zinc-900 p-1 rounded-lg border border-zinc-800">
           <button
             onClick={() => setView('personal')}
-            className={`
-              flex items-center gap-2 px-6 py-2 rounded-md text-sm font-bold transition-all
-              ${
-                view === 'personal'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-500 hover:text-zinc-300'
-              }
-            `}
+            className={`flex items-center gap-2 px-6 py-2 rounded-md text-sm font-bold transition-all ${
+              view === 'personal'
+                ? 'bg-zinc-800 text-white shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
           >
             <FolderOpen size={16} />
             My Tasks
           </button>
           <button
             onClick={() => setView('shared')}
-            className={`
-              flex items-center gap-2 px-6 py-2 rounded-md text-sm font-bold transition-all
-              ${
-                view === 'shared'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-500 hover:text-zinc-300'
-              }
-            `}
+            className={`flex items-center gap-2 px-6 py-2 rounded-md text-sm font-bold transition-all ${
+              view === 'shared'
+                ? 'bg-zinc-800 text-white shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
           >
             <Share2 size={16} />
             Shared With Me
@@ -284,10 +270,9 @@ function TaskDashboard({ onLogout }) {
         </div>
       </div>
 
-      {/* 3. CONDITIONAL RENDER: PERSONAL VIEW */}
+      {/* Personal View (Stats & Controls) */}
       {view === 'personal' && (
         <>
-          {/* Stats HUD */}
           <div className="grid grid-cols-4 gap-2 mb-8">
             <div className="p-2 md:py-3 md:px-4 bg-zinc-900/50 border border-zinc-800 rounded-lg text-center md:text-left">
               <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-0 truncate">
@@ -331,7 +316,6 @@ function TaskDashboard({ onLogout }) {
 
           <div className="my-8 border-t border-neutral-800" />
 
-          {/* Filters */}
           <div className="flex flex-wrap gap-4 p-4 mb-6 bg-zinc-900/50 border border-emerald-900/30 rounded-lg items-center">
             <input
               type="text"
@@ -377,7 +361,7 @@ function TaskDashboard({ onLogout }) {
         </>
       )}
 
-      {/* 4. CONDITIONAL RENDER: SHARED VIEW */}
+      {/* Shared View Header */}
       {view === 'shared' && (
         <div className="mb-6 p-6 bg-zinc-900/30 border border-zinc-800 rounded-xl text-center">
           <Share2 className="w-10 h-10 text-emerald-500 mx-auto mb-3 opacity-80" />
@@ -388,7 +372,7 @@ function TaskDashboard({ onLogout }) {
         </div>
       )}
 
-      {/* 5. TASK LIST (Renders whatever is in 'tasks' state) */}
+      {/* List & Pagination */}
       <TaskList
         tasks={tasks}
         loading={loading}
@@ -398,7 +382,6 @@ function TaskDashboard({ onLogout }) {
         isOwner={view === 'personal'}
       />
 
-      {/* 6. PAGINATION (Only in Personal View) */}
       {view === 'personal' && (
         <div className="mt-6 flex justify-center gap-4 items-center text-zinc-400">
           <button

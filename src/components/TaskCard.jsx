@@ -1,23 +1,28 @@
-import { ChevronDown, Pencil, Trash2, Users } from 'lucide-react'; // <--- NEW IMPORTS
+import { ChevronDown, Pencil, Trash2, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import CommentsSection from './CommentsSection';
 import ShareModal from './ShareModal';
 
 function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
-  // Tracks if the card details are visible
+  // State
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-
-  // --- LIVE SHARE COUNT ---
   const [shareCount, setShareCount] = useState(task.share_count || 0);
 
-  // Sync state if the parent data changes (e.g. page refresh)
+  const [editForm, setEditForm] = useState({
+    title: task.title,
+    description: task.description || '',
+    priority: task.priority,
+    due_date: task.due_date ? task.due_date.split('T')[0] : '',
+    tags: task.tags ? task.tags.join(', ') : '',
+  });
+
   useEffect(() => {
     setShareCount(task.share_count || 0);
   }, [task.share_count]);
-  // -------------------------------
 
+  // Helpers
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const safeDateString = dateString.endsWith('Z')
@@ -34,37 +39,10 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
     });
   };
 
-  const [editForm, setEditForm] = useState({
-    title: task.title,
-    description: task.description || '',
-    priority: task.priority,
-    due_date: task.due_date ? task.due_date.split('T')[0] : '',
-    tags: task.tags ? task.tags.join(', ') : '',
-  });
-
   const isOverdue =
     task.due_date && !task.completed && new Date(task.due_date) < new Date();
 
-  const styles = {
-    header:
-      'flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-800/50 transition-colors',
-    checkbox:
-      'w-5 h-5 accent-emerald-500 cursor-pointer rounded bg-zinc-800 border-zinc-600 focus:ring-emerald-500',
-    detailsContainer:
-      'px-14 pb-4 pt-0 text-sm animate-in slide-in-from-top-2 duration-200',
-    detailsGrid:
-      'pt-4 border-t border-zinc-800/50 grid grid-cols-1 md:grid-cols-2 gap-4',
-    label: 'text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1',
-    deleteBtn:
-      'cursor-pointer p-2 text-zinc-500 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100',
-  };
-
-  const priorityColors = {
-    high: 'border-l-red-500 text-red-400 bg-red-950/30',
-    medium: 'border-l-yellow-500 text-yellow-400 bg-yellow-950/30',
-    low: 'border-l-emerald-500 text-emerald-400 bg-emerald-950/30',
-  };
-
+  // Handlers
   const handleSave = () => {
     const tagArray = editForm.tags
       .split(',')
@@ -85,11 +63,46 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
     setIsEditing(false);
   };
 
+  // Styles & Config
+  const styles = {
+    header:
+      'flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-800/50 transition-colors gap-3',
+    checkbox:
+      'w-5 h-5 accent-emerald-500 cursor-pointer rounded bg-zinc-800 border-zinc-600 focus:ring-emerald-500 shrink-0',
+    detailsContainer:
+      'px-14 pb-4 pt-0 text-sm animate-in slide-in-from-top-2 duration-200',
+    detailsGrid:
+      'pt-4 border-t border-zinc-800/50 grid grid-cols-1 md:grid-cols-2 gap-4',
+    label: 'text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1',
+    deleteBtn:
+      'cursor-pointer p-2 text-zinc-500 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100',
+    badge:
+      'px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border shrink-0',
+  };
+
+  const priorityConfig = {
+    high: {
+      label: 'HIGH',
+      class: 'text-orange-400 bg-orange-950/30 border-orange-900/50',
+    },
+    medium: {
+      label: 'MED',
+      class: 'text-yellow-400 bg-yellow-950/30 border-yellow-900/50',
+    },
+    low: {
+      label: 'LOW',
+      class: 'text-emerald-400 bg-emerald-950/30 border-emerald-900/50',
+    },
+  };
+
+  const currentPriority =
+    priorityConfig[task.priority] || priorityConfig.medium;
+
   const containerClass = task.completed
     ? 'group bg-emerald-950/10 border border-emerald-500/10 rounded-lg overflow-hidden transition-all shadow-sm opacity-60 hover:opacity-100'
     : 'group bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden transition-all hover:border-emerald-500/50 shadow-sm';
 
-  // --- RENDER: EDIT MODE ---
+  // Render: Edit Mode
   if (isEditing) {
     return (
       <div className={`${styles.card} p-4 border-emerald-500/50`}>
@@ -178,11 +191,12 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
     );
   }
 
-  // --- RENDER: VIEW MODE ---
+  // Render: View Mode
   return (
     <div className={containerClass}>
       <div className={styles.header} onClick={() => setIsExpanded(!isExpanded)}>
-        <div className="flex items-center gap-4 flex-1">
+        {/* Task Content */}
+        <div className="flex items-center gap-4 flex-1 min-w-0">
           <input
             type="checkbox"
             checked={task.completed}
@@ -191,7 +205,7 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
             className={styles.checkbox}
           />
 
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <span
                 className={`font-medium transition-all ${
@@ -202,37 +216,48 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
               >
                 {task.title}
               </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 mt-1.5">
+              <span className={`${styles.badge} ${currentPriority.class}`}>
+                {currentPriority.label}
+              </span>
+
               {isOverdue && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold text-red-400 bg-red-950/50 border border-red-900/50 rounded uppercase tracking-wider">
-                  Overdue
+                <span
+                  className={`${styles.badge} text-red-400 bg-red-950/50 border border-red-900/50`}
+                >
+                  OVERDUE
                 </span>
               )}
-            </div>
-            {task.tags && task.tags.length > 0 && (
-              <div className="flex gap-2 mt-1">
-                {task.tags.map((tag, i) => (
-                  <span key={i} className="text-xs text-zinc-500">
+
+              {task.tags &&
+                task.tags.length > 0 &&
+                task.tags.map((tag, i) => (
+                  <span
+                    key={i}
+                    className="text-xs text-zinc-500 truncate max-w-25"
+                  >
                     #{tag}
                   </span>
                 ))}
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Share Button */}
+        {/* Actions */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {(isOwner || !isOwner) && isOwner && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setShowShareModal(true);
               }}
-              className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-zinc-800 transition-colors group/share"
+              className="flex items-center gap-1.5 p-2 rounded hover:bg-zinc-800 transition-colors group/share"
               title="Manage sharing"
             >
               <Users
-                size={14}
+                size={16}
                 className={
                   shareCount > 0
                     ? 'text-emerald-400'
@@ -240,40 +265,26 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
                 }
               />
               {shareCount > 0 && (
-                <span className="text-xs font-bold text-zinc-400 group-hover/share:text-zinc-200">
+                <span className="text-xs font-bold text-zinc-400 group-hover/share:text-zinc-200 hidden sm:inline">
                   {shareCount}
                 </span>
               )}
             </button>
           )}
 
-          <span
-            className={`w-20 text-center shrink-0 block py-1 text-xs font-bold uppercase rounded border-l-4 shadow-sm ${
-              priorityColors[task.priority] || priorityColors.medium
-            }`}
-          >
-            {task.priority}
-          </span>
-
-          {/* EDIT BUTTON (Logic: Show if Owner OR Shared) */}
           {(isOwner || !isOwner) && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // GUARD: Prevent action if View Only
                 if (!isOwner && task.my_permission !== 'edit') return;
                 setIsEditing(true);
               }}
-              // DISABLE LOGIC: Grey out if guest AND View Only
               disabled={!isOwner && task.my_permission !== 'edit'}
-              className={`
-                p-2 rounded-lg transition-all 
-                ${
-                  !isOwner && task.my_permission !== 'edit'
-                    ? 'text-zinc-600 cursor-not-allowed' // Disabled Style
-                    : 'text-zinc-400 hover:text-emerald-400 hover:bg-emerald-950/30 opacity-100 md:opacity-0 md:group-hover:opacity-100 cursor-pointer' // Active Style
-                }
-              `}
+              className={`p-2 rounded-lg transition-all ${
+                !isOwner && task.my_permission !== 'edit'
+                  ? 'text-zinc-600 cursor-not-allowed'
+                  : 'text-zinc-400 hover:text-emerald-400 hover:bg-emerald-950/30 opacity-100 md:opacity-0 md:group-hover:opacity-100 cursor-pointer'
+              }`}
               title={
                 isOwner
                   ? 'Edit Task'
@@ -282,12 +293,10 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
                   : 'View Only (No Edit Access)'
               }
             >
-              {/* --- NEW: Lucide Pencil Icon --- */}
               <Pencil size={16} />
             </button>
           )}
 
-          {/* FIX 4: Only Owners can Delete */}
           {isOwner && (
             <button
               onClick={(e) => {
@@ -297,24 +306,22 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
               className={styles.deleteBtn}
               title="Delete Task"
             >
-              {/* --- NEW: Lucide Trash2 Icon --- */}
               <Trash2 size={16} />
             </button>
           )}
 
-          {/* Expand Arrow */}
           <span
             className="text-zinc-600 text-xs transition-transform duration-200 ml-1"
             style={{
               transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
             }}
           >
-            {/* --- NEW: Lucide ChevronDown Icon --- */}
             <ChevronDown size={16} />
           </span>
         </div>
       </div>
 
+      {/* Expanded Details */}
       {isExpanded && (
         <div className={styles.detailsContainer}>
           <div className={styles.detailsGrid}>
@@ -324,30 +331,50 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
                 {task.description || 'No description provided.'}
               </p>
             </div>
-            <div>
-              <p className={styles.label}>Created</p>
-              <p className="text-zinc-400 font-mono text-xs">
-                {formatDate(task.created_at)}
-              </p>
-            </div>
-            {task.due_date && (
+
+            <div className="md:col-span-2 flex flex-wrap items-center gap-8 mt-2">
               <div>
-                <p
-                  className={`${styles.label} ${
-                    isOverdue ? 'text-red-500' : ''
-                  }`}
-                >
-                  Due Date
-                </p>
-                <p
-                  className={`font-mono text-xs ${
-                    isOverdue ? 'text-red-400 font-bold' : 'text-emerald-400'
-                  }`}
-                >
-                  {new Date(task.due_date).toLocaleDateString()}
+                <p className={styles.label}>Created</p>
+                <p className="text-zinc-400 font-mono text-xs">
+                  {formatDate(task.created_at)}
                 </p>
               </div>
-            )}
+
+              {task.due_date && (
+                <div>
+                  <p
+                    className={`${styles.label} ${
+                      isOverdue ? 'text-red-500' : ''
+                    }`}
+                  >
+                    Due Date
+                  </p>
+                  <p
+                    className={`font-mono text-xs ${
+                      isOverdue ? 'text-red-400 font-bold' : 'text-emerald-400'
+                    }`}
+                  >
+                    {new Date(task.due_date).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
+
+              {!isOwner && task.owner_username && (
+                <div>
+                  <p className={styles.label}>Owner</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 shrink-0 rounded-full bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center overflow-hidden">
+                      <span className="text-[10px] text-emerald-400 font-bold leading-none select-none">
+                        {task.owner_username[0].toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="text-emerald-400 font-medium text-xs truncate">
+                      @{task.owner_username}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <CommentsSection taskId={task.id} />
         </div>
