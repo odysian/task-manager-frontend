@@ -1,5 +1,6 @@
 import { Bell, Shield, User, X } from 'lucide-react';
 import { useState } from 'react';
+import NotificationsSection from './NotificationSection';
 import ProfileSection from './ProfileSection';
 
 function SettingsModal({ onClose, user }) {
@@ -72,11 +73,7 @@ function SettingsModal({ onClose, user }) {
           <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
             {activeTab === 'profile' && <ProfileSection user={user} />}
 
-            {activeTab === 'notifications' && (
-              <div className="text-zinc-400">
-                <p>Notification settings coming soon...</p>
-              </div>
-            )}
+            {activeTab === 'notifications' && <NotificationsSection />}
           </div>
         </div>
       </div>
