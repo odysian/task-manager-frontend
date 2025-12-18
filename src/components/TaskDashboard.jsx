@@ -1,13 +1,18 @@
-import { FolderOpen, Share2 } from 'lucide-react';
+import { Activity, FolderOpen, Share2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import api from '../api';
+import ActivityTimeline from './ActivityTimeline';
+import SettingsModal from './SettingsModal';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
+import UserMenu from './UserMenu';
 
 const ITEMS_PER_PAGE = 10;
 
 function TaskDashboard({ onLogout }) {
   // State
+  const [user, setUser] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -39,6 +44,19 @@ function TaskDashboard({ onLogout }) {
   const abortControllerRef = useRef(null);
 
   // Effects
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get('/users/me');
+        setUser(response.data);
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   useEffect(() => {
     setPage(1);
   }, [filters, view]);
@@ -220,12 +238,12 @@ function TaskDashboard({ onLogout }) {
         </div>
 
         <div className="flex items-center gap-4">
-          <button
-            onClick={onLogout}
-            className="px-4 py-2 text-xs font-bold text-zinc-400 hover:text-white hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-lg transition-all"
-          >
-            Sign Out
-          </button>
+          <UserMenu
+            username={user?.username}
+            email={user?.email}
+            onLogout={onLogout}
+            onOpenSettings={() => setShowSettings(true)}
+          />
         </div>
       </header>
 
@@ -266,6 +284,17 @@ function TaskDashboard({ onLogout }) {
           >
             <Share2 size={16} />
             Shared With Me
+          </button>
+          <button
+            onClick={() => setView('activity')}
+            className={`flex items-center gap-2 px-6 py-2 rounded-md text-sm font-bold transition-all ${
+              view === 'activity'
+                ? 'bg-zinc-800 text-white shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            <Activity size={16} />
+            Activity
           </button>
         </div>
       </div>
@@ -371,16 +400,31 @@ function TaskDashboard({ onLogout }) {
           </p>
         </div>
       )}
+      {/* ACTIVITY VIEW */}
+      {view === 'activity' && (
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-6 p-6 bg-zinc-900/30 border border-zinc-800 rounded-xl text-center">
+            <Activity className="w-10 h-10 text-blue-500 mx-auto mb-3 opacity-80" />
+            <h2 className="text-xl font-bold text-white">Activity Log</h2>
+            <p className="text-zinc-500 text-sm mt-1">
+              History of all actions taken on your tasks.
+            </p>
+          </div>
+          <ActivityTimeline />
+        </div>
+      )}
 
       {/* List & Pagination */}
-      <TaskList
-        tasks={tasks}
-        loading={loading}
-        onToggle={toggleTask}
-        onDelete={deleteTask}
-        onUpdate={updateTask}
-        isOwner={view === 'personal'}
-      />
+      {view !== 'activity' && (
+        <TaskList
+          tasks={tasks}
+          loading={loading}
+          onToggle={toggleTask}
+          onDelete={deleteTask}
+          onUpdate={updateTask}
+          isOwner={view === 'personal'}
+        />
+      )}
 
       {view === 'personal' && (
         <div className="mt-6 flex justify-center gap-4 items-center text-zinc-400">
@@ -402,6 +446,10 @@ function TaskDashboard({ onLogout }) {
             Next
           </button>
         </div>
+      )}
+      {/* SETTINGS MODAL */}
+      {showSettings && user && (
+        <SettingsModal user={user} onClose={() => setShowSettings(false)} />
       )}
     </div>
   );
