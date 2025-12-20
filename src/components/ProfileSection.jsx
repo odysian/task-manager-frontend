@@ -1,6 +1,13 @@
 import { AlertCircle, Calendar, CheckCircle, Mail, Upload } from 'lucide-react';
+import { useState } from 'react';
+import api from '../api';
 
 function ProfileSection({ user }) {
+  // State for verification email
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState('');
+
   // Format Date: "December 2024"
   const joinDate = new Date(user.created_at).toLocaleDateString('en-US', {
     month: 'long',
@@ -13,6 +20,26 @@ function ProfileSection({ user }) {
     { label: 'Tasks Shared', value: '...' },
     { label: 'Comments', value: '...' },
   ];
+
+  // NEW: Handle sending verification email
+  const handleSendVerification = async () => {
+    setSendingEmail(true);
+    setEmailError('');
+    setEmailSent(false);
+
+    try {
+      await api.post('/notifications/send-verification');
+      setEmailSent(true);
+
+      // Clear success message after 5 seconds
+      setTimeout(() => setEmailSent(false), 5000);
+    } catch (err) {
+      console.error('Failed to send verification:', err);
+      setEmailError(err.response?.data?.detail || 'Failed to send email');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
@@ -70,19 +97,51 @@ function ProfileSection({ user }) {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 text-amber-400">
-              <AlertCircle size={20} />
-              <div>
-                <p className="font-bold text-sm">Email Not Verified</p>
-                <p className="text-xs text-amber-500/70">
-                  Verify to enable password recovery.
-                </p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-amber-400">
+                <AlertCircle size={20} />
+                <div>
+                  <p className="font-bold text-sm">Email Not Verified</p>
+                  <p className="text-xs text-amber-500/70">
+                    Verify to enable notifications.
+                  </p>
+                </div>
               </div>
+              <button
+                onClick={handleSendVerification}
+                disabled={sendingEmail || emailSent}
+                className="px-3 py-1.5 text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded hover:bg-amber-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {sendingEmail ? (
+                  <>
+                    <div className="w-3 h-3 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+                    Sending...
+                  </>
+                ) : emailSent ? (
+                  <>
+                    <CheckCircle size={14} />
+                    Sent!
+                  </>
+                ) : (
+                  'Send Email'
+                )}
+              </button>
             </div>
-            <button className="px-3 py-1.5 text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded hover:bg-amber-500/20 transition-colors">
-              Send Email
-            </button>
+
+            {/* Success Message */}
+            {emailSent && (
+              <div className="p-3 bg-emerald-950/20 border border-emerald-900/30 rounded-lg text-emerald-400 text-xs">
+                ✓ Verification email sent! Check your inbox at {user.email}
+              </div>
+            )}
+
+            {/* Error Message */}
+            {emailError && (
+              <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-lg text-red-400 text-xs">
+                ⚠️ {emailError}
+              </div>
+            )}
           </div>
         )}
       </div>

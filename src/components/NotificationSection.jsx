@@ -153,23 +153,6 @@ function NotificationsSection() {
         </div>
       )}
 
-      {/* DEBUG BUTTON - Remove after email verification is built */}
-      {process.env.NODE_ENV === 'development' &&
-        !preferences.email_verified && (
-          <div className="p-4 bg-amber-900/20 border border-amber-500/30 rounded-lg">
-            <p className="text-amber-400 text-sm mb-2">Debug Controls</p>
-            <button
-              onClick={async () => {
-                await api.post('/notifications/verify');
-                fetchPreferences();
-              }}
-              className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 transition-colors"
-            >
-              Mock Verify Email
-            </button>
-          </div>
-        )}
-
       {/* MASTER TOGGLE */}
       <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
         <div className="flex items-start justify-between">
