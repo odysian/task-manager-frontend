@@ -1,11 +1,11 @@
 import { Activity, FolderOpen, Share2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import api from '../api';
-import ActivityTimeline from './ActivityTimeline';
-import SettingsModal from './SettingsModal';
+import api from '../../api';
+import ActivityTimeline from '../Activity/ActivityTimeline';
+import UserMenu from '../Common/UserMenu';
+import SettingsModal from '../Settings/SettingsModal';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
-import UserMenu from './UserMenu';
 
 const ITEMS_PER_PAGE = 10;
 

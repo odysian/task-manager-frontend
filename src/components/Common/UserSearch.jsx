@@ -1,6 +1,6 @@
 import { Loader2, Search, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import api from '../api';
+import api from '../../api';
 
 function UserSearch({ onSelect }) {
   const [query, setQuery] = useState('');

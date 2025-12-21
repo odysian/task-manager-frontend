@@ -1,9 +1,9 @@
 import { ChevronDown, Pencil, Trash2, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import ActivityTimeline from './ActivityTimeline';
-import CommentsSection from './CommentsSection';
-import FilesSection from './FilesSection';
-import ShareModal from './ShareModal';
+import ActivityTimeline from '../Activity/ActivityTimeline';
+import CommentsSection from '../Comments/CommentsSection';
+import FilesSection from '../Files/FilesSection';
+import ShareModal from '../Sharing/ShareModal';
 
 function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
   // State

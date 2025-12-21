@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import api from './api';
-import ForgotPasswordForm from './components/ForgotPasswordForm';
-import LoginForm from './components/LoginForm';
-import PasswordResetForm from './components/PasswordResetForm';
-import RegisterForm from './components/RegisterForm';
-import TaskDashboard from './components/TaskDashboard';
+import ForgotPasswordForm from './components/Auth/ForgotPasswordForm';
+import LoginForm from './components/Auth/LoginForm';
+import PasswordResetForm from './components/Auth/PasswordResetForm';
+import RegisterForm from './components/Auth/RegisterForm';
+import TaskDashboard from './components/Tasks/TaskDashboard';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 
 function App() {

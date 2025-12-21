@@ -4,7 +4,7 @@ import {
   formatActivityDescription,
   formatRelativeTime,
   getActivityIcon,
-} from '../utils/activityHelpers';
+} from '../../utils/activityHelpers';
 
 function ActivityItem({ activity }) {
   const [showDetails, setShowDetails] = useState(false);

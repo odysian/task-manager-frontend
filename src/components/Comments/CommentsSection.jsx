@@ -1,6 +1,6 @@
 import { Loader2, MessageSquareOff } from 'lucide-react'; // Icons for loading/empty states
 import { useCallback, useEffect, useState } from 'react';
-import api from '../api'; // Your centralized API handler
+import api from '../../api'; // Your centralized API handler
 import CommentForm from './CommentForm'; // For adding NEW comments
 import CommentItem from './CommentItem'; // For displaying EXISTING comments
 

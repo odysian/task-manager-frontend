@@ -1,6 +1,6 @@
 import { ChevronDown, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import api from '../api';
+import api from '../../api';
 import ActivityItem from './ActivityItem';
 
 function ActivityTimeline({ taskId, isExpanded }) {

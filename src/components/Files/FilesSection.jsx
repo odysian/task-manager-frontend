@@ -1,6 +1,6 @@
 import { FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import api from '../api';
+import api from '../../api';
 import FileItem from './FileItem';
 import FileUploadZone from './FileUploadZone';
 

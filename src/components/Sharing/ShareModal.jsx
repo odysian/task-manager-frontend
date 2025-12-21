@@ -1,8 +1,8 @@
 import { Users, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import api from '../api';
+import api from '../../api';
+import UserSearch from '../Common/UserSearch';
 import ShareList from './ShareList';
-import UserSearch from './UserSearch';
 
 function ShareModal({ taskId, onClose, onCountChange }) {
   const [shares, setShares] = useState([]);

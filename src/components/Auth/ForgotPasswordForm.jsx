@@ -1,6 +1,6 @@
 import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 import { useState } from 'react';
-import api from '../api';
+import api from '../../api';
 
 function ForgotPasswordForm({ onSwitchToLogin }) {
   const [email, setEmail] = useState('');

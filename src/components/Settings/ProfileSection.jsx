@@ -1,6 +1,6 @@
 import { AlertCircle, Calendar, CheckCircle, Mail, Upload } from 'lucide-react';
 import { useState } from 'react';
-import api from '../api';
+import api from '../../api';
 
 function ProfileSection({ user }) {
   // State for verification email

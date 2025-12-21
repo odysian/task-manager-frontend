@@ -8,7 +8,7 @@ import {
   Save,
 } from 'lucide-react';
 import { useState } from 'react';
-import api from '../api';
+import api from '../../api';
 
 function SecuritySection() {
   const [formData, setFormData] = useState({
