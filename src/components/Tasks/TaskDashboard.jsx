@@ -261,7 +261,6 @@ function TaskDashboard({ onLogout }) {
         </div>
       )}
 
-      {/* View Switcher Section - Reduced bottom margin */}
       <div className="flex justify-center mb-4">
         <div className="flex bg-zinc-900 p-1 rounded-lg border border-zinc-800 gap-1">
           <button
@@ -307,7 +306,6 @@ function TaskDashboard({ onLogout }) {
 
       {view === 'personal' && (
         <>
-          {/* STATS: Tighter layout with reduced padding and horizontal alignment on desktop */}
           <div className="grid grid-cols-4 gap-2 mb-4">
             <div className="py-1.5 px-2 md:py-2 md:px-4 bg-zinc-900/50 border border-zinc-800 rounded-lg flex flex-col md:flex-row md:items-baseline md:justify-between text-center md:text-left">
               <p className="text-zinc-500 text-[9px] md:text-[10px] font-bold uppercase tracking-wider truncate">
@@ -349,10 +347,9 @@ function TaskDashboard({ onLogout }) {
             onAddTask={addTask}
           />
 
-          <div className="my-8 border-t border-neutral-800" />
+          <div className="my-4 border-t border-neutral-800" />
 
-          {/* ... filters ... */}
-          <div className="flex flex-wrap gap-4 p-4 mb-6 bg-zinc-900/50 border border-emerald-900/30 rounded-lg items-center">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-4 p-4 mb-4 bg-zinc-900/50 border border-emerald-900/30 rounded-lg items-center">
             <input
               type="text"
               placeholder="Search tasks..."
@@ -360,44 +357,46 @@ function TaskDashboard({ onLogout }) {
               onChange={(e) =>
                 setFilters((prev) => ({ ...prev, search: e.target.value }))
               }
-              className={`${inputClasses} flex-1 min-w-50`}
+              className={`${inputClasses} w-full md:flex-1`}
             />
-            <select
-              value={filters.priority}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, priority: e.target.value }))
-              }
-              className={inputClasses}
-            >
-              <option value="">Priority</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-            <select
-              value={filters.status}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, status: e.target.value }))
-              }
-              className={inputClasses}
-            >
-              <option value="">Status</option>
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-            </select>
-            <button
-              onClick={() =>
-                setFilters({ search: '', priority: '', status: '' })
-              }
-              className={buttonClasses}
-            >
-              Reset
-            </button>
+
+            <div className="flex gap-2 md:gap-4 w-full md:w-auto items-center">
+              <select
+                value={filters.priority}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, priority: e.target.value }))
+                }
+                className={`${inputClasses} flex-1 md:w-32`}
+              >
+                <option value="">Priority</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+              <select
+                value={filters.status}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, status: e.target.value }))
+                }
+                className={`${inputClasses} flex-1 md:w-32`}
+              >
+                <option value="">Status</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+              </select>
+              <button
+                onClick={() =>
+                  setFilters({ search: '', priority: '', status: '' })
+                }
+                className={`${buttonClasses} px-3 md:px-4`}
+              >
+                Reset
+              </button>
+            </div>
           </div>
         </>
       )}
 
-      {/* ... Shared and Activity Views ... */}
       {view === 'shared' && (
         <div className="mb-6 p-6 bg-zinc-900/30 border border-zinc-800 rounded-xl text-center">
           <Share2 className="w-10 h-10 text-emerald-500 mx-auto mb-3 opacity-80" />

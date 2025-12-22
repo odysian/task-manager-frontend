@@ -1,19 +1,17 @@
 function TaskForm({ formData, onFormChange, onAddTask }) {
-  // Reusing the same "System" styles from Dashboard for consistency
   const inputClasses =
     'w-full p-3 rounded bg-zinc-900 border border-zinc-700 text-white ' +
     'focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 ' +
     'focus:outline-none transition-all placeholder-zinc-500';
 
-  const labelClasses = 'block text-zinc-400 text-sm font-bold mb-2';
+  const labelClasses = 'block text-zinc-400 text-sm font-bold mb-1';
 
   return (
-    <div className="mb-8 p-6 bg-zinc-900/30 border border-zinc-800 rounded-xl shadow-sm">
-      <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+    <div className="mb-4 p-4 md:p-5 bg-zinc-900/30 border border-zinc-800 rounded-xl shadow-sm">
+      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
         <span className="text-emerald-500">::</span> Create New Task
       </h3>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="md:col-span-2">
           <label className={labelClasses}>Task Title</label>
           <input
@@ -71,7 +69,7 @@ function TaskForm({ formData, onFormChange, onAddTask }) {
           />
         </div>
 
-        <div className="md:col-span-2 mt-2">
+        <div className="md:col-span-2 mt-1">
           <button
             onClick={onAddTask}
             className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-lg shadow-emerald-900/20 active:scale-[0.99]"
