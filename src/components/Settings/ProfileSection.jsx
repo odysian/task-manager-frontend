@@ -1,8 +1,12 @@
-import { AlertCircle, Calendar, CheckCircle, Mail, Upload } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { AlertCircle, Calendar, Camera, CheckCircle, Mail } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import api from '../../api';
 
 function ProfileSection({ user }) {
+  const [avatarUrl, setAvatarUrl] = useState(user.avatar_url);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [emailError, setEmailError] = useState('');
@@ -19,7 +23,6 @@ function ProfileSection({ user }) {
     const fetchStats = async () => {
       try {
         const response = await api.get('/tasks/stats');
-
         setStats([
           { label: 'Tasks Created', value: response.data.total },
           { label: 'Tasks Shared', value: response.data.tasks_shared },
@@ -39,6 +42,37 @@ function ProfileSection({ user }) {
 
     fetchStats();
   }, []);
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (JPEG, PNG)');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setIsUploading(true);
+
+      const response = await api.post('/users/me/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      const fullUrl = `${import.meta.env.VITE_API_URL}${
+        response.data.avatar_url
+      }`;
+      setAvatarUrl(`${fullUrl}?t=${Date.now()}`);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Failed to upload profile picture');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSendVerification = async () => {
     setSendingEmail(true);
@@ -61,20 +95,40 @@ function ProfileSection({ user }) {
     <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
         <div className="relative group">
-          <div className="w-24 h-24 rounded-full bg-emerald-900/30 border-2 border-emerald-500/50 flex items-center justify-center text-4xl font-bold text-emerald-400 overflow-hidden">
-            {user.avatar_url ? (
+          <div className="w-24 h-24 rounded-full bg-emerald-900/30 border-2 border-emerald-500/50 flex items-center justify-center text-4xl font-bold text-emerald-400 overflow-hidden relative">
+            {avatarUrl ? (
               <img
-                src={user.avatar_url}
+                src={avatarUrl}
                 alt={user.username}
                 className="w-full h-full object-cover"
               />
             ) : (
               <span>{user.username[0].toUpperCase()}</span>
             )}
+
+            {isUploading && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
           </div>
-          <button className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-            <Upload className="text-white w-6 h-6" />
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="absolute bottom-0 right-0 p-2 bg-zinc-800 hover:bg-emerald-600 text-white rounded-full shadow-lg border border-zinc-700 transition-colors cursor-pointer"
+            title="Upload Profile Picture"
+          >
+            <Camera size={16} />
           </button>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            className="hidden"
+            accept="image/jpeg,image/png,image/gif"
+          />
         </div>
 
         <div className="text-center md:text-left space-y-1">
@@ -124,28 +178,18 @@ function ProfileSection({ user }) {
                 disabled={sendingEmail || emailSent}
                 className="px-3 py-1.5 text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded hover:bg-amber-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {sendingEmail ? (
-                  <>
-                    <div className="w-3 h-3 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
-                    Sending...
-                  </>
-                ) : emailSent ? (
-                  <>
-                    <CheckCircle size={14} />
-                    Sent!
-                  </>
-                ) : (
-                  'Send Email'
-                )}
+                {sendingEmail
+                  ? 'Sending...'
+                  : emailSent
+                  ? 'Sent!'
+                  : 'Send Email'}
               </button>
             </div>
-
             {emailSent && (
               <div className="p-3 bg-emerald-950/20 border border-emerald-900/30 rounded-lg text-emerald-400 text-xs">
                 ✓ Verification email sent! Check your inbox at {user.email}
               </div>
             )}
-
             {emailError && (
               <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-lg text-red-400 text-xs">
                 ⚠️ {emailError}
@@ -161,18 +205,13 @@ function ProfileSection({ user }) {
         </h4>
         <div className="grid grid-cols-3 gap-4">
           {loadingStats
-            ? // Skeleton Loading State
-              [1, 2, 3].map((i) => (
+            ? [1, 2, 3].map((i) => (
                 <div
                   key={i}
                   className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-center h-20 animate-pulse"
-                >
-                  <div className="h-6 w-12 bg-zinc-800 mx-auto rounded mb-2"></div>
-                  <div className="h-3 w-20 bg-zinc-800 mx-auto rounded"></div>
-                </div>
+                />
               ))
-            : // Real Data
-              stats.map((stat, i) => (
+            : stats.map((stat, i) => (
                 <div
                   key={i}
                   className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-center"
