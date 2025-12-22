@@ -39,9 +39,7 @@ function CommentForm({
         placeholder={isEditing ? 'Update...' : 'Add a comment...'}
         // UPDATED: Forced rows={1} and set a small min-height for "single line" look
         rows={1}
-        className={`${baseClasses} ${
-          isEditing ? 'min-h-[38px]' : 'min-h-[38px]'
-        }`}
+        className={`${baseClasses} ${isEditing ? 'min-h-9.5' : 'min-h-9.5'}`}
         disabled={isSubmitting}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
@@ -57,7 +55,7 @@ function CommentForm({
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="px-3 h-[38px] text-xs font-medium text-zinc-400 hover:text-white transition-colors"
+            className="px-3 h-9.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
           >
             Cancel
           </button>
@@ -66,7 +64,7 @@ function CommentForm({
         <button
           type="submit"
           disabled={!content.trim() || isSubmitting}
-          className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 h-[38px] rounded-md text-xs font-bold flex items-center gap-2 transition-all"
+          className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 h-9.5 rounded-md text-xs font-bold flex items-center gap-2 transition-all"
         >
           {isSubmitting ? (
             <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />

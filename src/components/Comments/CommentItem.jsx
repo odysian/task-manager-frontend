@@ -7,9 +7,10 @@ function CommentItem({ comment, onDelete, onUpdate, isTaskOwner }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [needsCollapse, setNeedsCollapse] = useState(false);
   const contentRef = useRef(null);
-  const currentUser = localStorage.getItem('username');
 
-  // Check if the content actually exceeds 3 lines to show/hide the toggle
+  // Use a fallback for currentUser to prevent logic breaks
+  const currentUser = localStorage.getItem('username') || '';
+
   useEffect(() => {
     if (contentRef.current) {
       const isOverflowing =
@@ -48,10 +49,8 @@ function CommentItem({ comment, onDelete, onUpdate, isTaskOwner }) {
   }
 
   return (
-    // REDUCED: p-3 to p-2 for tighter vertical height
     <div className="group flex gap-3 p-2 rounded-lg hover:bg-zinc-900/50 transition-colors">
       <div className="shrink-0 mt-1">
-        {/* REDUCED: w-8 to w-7 for more compact look */}
         <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
           <User size={12} className="text-zinc-400" />
         </div>
@@ -68,40 +67,38 @@ function CommentItem({ comment, onDelete, onUpdate, isTaskOwner }) {
             </span>
           </div>
 
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-4 transition-opacity">
             {canEdit && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="p-1 text-zinc-500 hover:text-emerald-400"
+                className="p-1.5 text-zinc-500 hover:text-emerald-400 active:text-emerald-400 transition-colors"
                 title="Edit"
               >
-                <Pencil size={12} />
+                <Pencil size={14} />
               </button>
             )}
             {canDelete && (
               <button
                 onClick={() => onDelete(comment.id)}
-                className="p-1 text-zinc-500 hover:text-red-400"
+                className="p-1.5 text-zinc-500 hover:text-red-400 active:text-red-400 transition-colors"
                 title="Delete"
               >
-                <Trash2 size={12} />
+                <Trash2 size={14} />
               </button>
             )}
           </div>
         </div>
 
         <div className="relative">
-          {/* UPDATED: Added line-clamp-3 and break-words to handle long strings/URLs */}
           <div
             ref={contentRef}
-            className={`text-sm text-zinc-300 whitespace-pre-wrap break-words ${
+            className={`text-sm text-zinc-300 whitespace-pre-wrap wrap-break-word ${
               !isExpanded ? 'line-clamp-3' : ''
             }`}
           >
             {comment.content}
           </div>
 
-          {/* Conditional Read More/Less Button */}
           {(needsCollapse || isExpanded) && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}

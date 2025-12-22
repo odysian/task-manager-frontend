@@ -220,11 +220,10 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
 
           <div className="flex flex-col min-w-0 flex-1">
             <div className="flex items-center gap-2 min-w-0">
-              {/* UPDATED: Added truncate (collapsed) vs wrap (expanded) logic and title attribute for hover */}
               <span
                 title={task.title}
                 className={`font-medium transition-all min-w-0 ${
-                  isExpanded ? 'break-words' : 'truncate'
+                  isExpanded ? 'wrap-break-word' : 'truncate'
                 } ${
                   task.completed
                     ? 'line-through text-zinc-600'
@@ -332,7 +331,7 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
               <div className="relative">
                 <p
                   ref={descriptionRef}
-                  className={`text-zinc-300 whitespace-pre-wrap leading-tight break-words ${
+                  className={`text-zinc-300 whitespace-pre-wrap leading-tight wrap-break-word ${
                     !isDescExpanded ? 'line-clamp-3' : ''
                   }`}
                 >
