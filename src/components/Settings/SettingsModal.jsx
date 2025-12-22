@@ -4,10 +4,9 @@ import NotificationsSection from './NotificationSection';
 import ProfileSection from './ProfileSection';
 import SecuritySection from './SecuritySection';
 
-function SettingsModal({ onClose, user }) {
+function SettingsModal({ onClose, user, onUserUpdate }) {
   const [activeTab, setActiveTab] = useState('profile');
 
-  // Stop propagation so clicking inside doesn't close
   const handleContentClick = (e) => e.stopPropagation();
 
   const tabs = [
@@ -22,17 +21,14 @@ function SettingsModal({ onClose, user }) {
       onClick={onClose}
     >
       <div
-        // UPDATED: flex-col on mobile, flex-row on desktop. Adjusted height for mobile safety.
         className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-4xl h-[85vh] md:h-150 flex flex-col md:flex-row overflow-hidden shadow-2xl"
         onClick={handleContentClick}
       >
-        {/* SIDEBAR (Becomes Top Bar on Mobile) */}
         <div className="w-full md:w-64 bg-zinc-900/50 border-b md:border-b-0 md:border-r border-zinc-800 p-4 flex flex-col shrink-0">
           <h2 className="text-lg font-bold text-white mb-4 md:mb-6 px-2">
             Settings
           </h2>
 
-          {/* UPDATED: Horizontal row on mobile, Vertical column on desktop */}
           <nav className="flex flex-row md:flex-col gap-2 md:gap-1 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
             {tabs.map((tab) => (
               <button
@@ -55,9 +51,7 @@ function SettingsModal({ onClose, user }) {
           </nav>
         </div>
 
-        {/* CONTENT AREA */}
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
-          {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-zinc-800 shrink-0">
             <div>
               <h3 className="text-xl font-bold text-white capitalize">
@@ -75,9 +69,10 @@ function SettingsModal({ onClose, user }) {
             </button>
           </div>
 
-          {/* Tab Content */}
           <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-            {activeTab === 'profile' && <ProfileSection user={user} />}
+            {activeTab === 'profile' && (
+              <ProfileSection user={user} onUserUpdate={onUserUpdate} />
+            )}
 
             {activeTab === 'notifications' && <NotificationsSection />}
             {activeTab === 'security' && <SecuritySection />}

@@ -2,8 +2,13 @@ import { AlertCircle, Calendar, Camera, CheckCircle, Mail } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import api from '../../api';
 
-function ProfileSection({ user }) {
-  const [avatarUrl, setAvatarUrl] = useState(user.avatar_url);
+function ProfileSection({ user, onUserUpdate }) {
+  // Use the API URL to format the initial avatar URL if it exists
+  const initialAvatar = user.avatar_url
+    ? `${import.meta.env.VITE_API_URL}${user.avatar_url}`
+    : null;
+
+  const [avatarUrl, setAvatarUrl] = useState(initialAvatar);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -65,7 +70,13 @@ function ProfileSection({ user }) {
       const fullUrl = `${import.meta.env.VITE_API_URL}${
         response.data.avatar_url
       }`;
-      setAvatarUrl(`${fullUrl}?t=${Date.now()}`);
+
+      const cacheBustedUrl = `${fullUrl}?t=${Date.now()}`;
+      setAvatarUrl(cacheBustedUrl);
+
+      if (onUserUpdate) {
+        onUserUpdate();
+      }
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Failed to upload profile picture');
@@ -98,7 +109,7 @@ function ProfileSection({ user }) {
           <div className="w-24 h-24 rounded-full bg-emerald-900/30 border-2 border-emerald-500/50 flex items-center justify-center text-4xl font-bold text-emerald-400 overflow-hidden relative">
             {avatarUrl ? (
               <img
-                src={`${avatarUrl}?t=${Date.now()}`}
+                src={avatarUrl}
                 alt={user.username}
                 className="w-full h-full object-cover"
               />

@@ -42,15 +42,16 @@ function TaskDashboard({ onLogout }) {
 
   const abortControllerRef = useRef(null);
 
+  const fetchProfile = async () => {
+    try {
+      const response = await api.get('/users/me');
+      setUser(response.data);
+    } catch (err) {
+      console.error('Failed to load profile:', err);
+    }
+  };
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await api.get('/users/me');
-        setUser(response.data);
-      } catch (err) {
-        console.error('Failed to load profile:', err);
-      }
-    };
     fetchProfile();
   }, []);
 
@@ -233,7 +234,11 @@ function TaskDashboard({ onLogout }) {
           <UserMenu
             username={user?.username}
             email={user?.email}
-            avatarUrl={user?.avatar_url || user?.avatarUrl}
+            avatarUrl={
+              user?.avatar_url
+                ? `${import.meta.env.VITE_API_URL}${user.avatar_url}`
+                : null
+            }
             onLogout={onLogout}
             onOpenSettings={() => setShowSettings(true)}
           />
@@ -435,7 +440,11 @@ function TaskDashboard({ onLogout }) {
         </div>
       )}
       {showSettings && user && (
-        <SettingsModal user={user} onClose={() => setShowSettings(false)} />
+        <SettingsModal
+          user={user}
+          onClose={() => setShowSettings(false)}
+          onUserUpdate={fetchProfile}
+        />
       )}
     </div>
   );
