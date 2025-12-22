@@ -98,7 +98,7 @@ function ProfileSection({ user }) {
           <div className="w-24 h-24 rounded-full bg-emerald-900/30 border-2 border-emerald-500/50 flex items-center justify-center text-4xl font-bold text-emerald-400 overflow-hidden relative">
             {avatarUrl ? (
               <img
-                src={avatarUrl}
+                src={`${avatarUrl}?t=${Date.now()}`}
                 alt={user.username}
                 className="w-full h-full object-cover"
               />

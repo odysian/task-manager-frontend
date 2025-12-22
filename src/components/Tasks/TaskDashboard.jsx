@@ -233,6 +233,7 @@ function TaskDashboard({ onLogout }) {
           <UserMenu
             username={user?.username}
             email={user?.email}
+            avatarUrl={user?.avatar_url || user?.avatarUrl}
             onLogout={onLogout}
             onOpenSettings={() => setShowSettings(true)}
           />

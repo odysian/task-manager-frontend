@@ -1,11 +1,10 @@
 import { ChevronDown, LogOut, Settings } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-function UserMenu({ username, email, onLogout, onOpenSettings }) {
+function UserMenu({ username, email, avatarUrl, onLogout, onOpenSettings }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -22,8 +21,16 @@ function UserMenu({ username, email, onLogout, onOpenSettings }) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-800 transition-colors border border-transparent hover:border-zinc-700 group"
       >
-        <div className="w-8 h-8 rounded-full bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm">
-          {username?.[0]?.toUpperCase()}
+        <div className="w-8 h-8 rounded-full bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm overflow-hidden">
+          {avatarUrl ? (
+            <img
+              src={`${avatarUrl}?t=${Date.now()}`}
+              alt={username}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            username?.[0]?.toUpperCase()
+          )}
         </div>
 
         <div className="hidden md:block text-left">
