@@ -51,7 +51,6 @@ function TaskDashboard({ onLogout }) {
     try {
       const response = await api.get('/users/me');
       setUser(response.data);
-      // Only update the timestamp if explicitly triggered by an upload
       if (isUpdate) {
         setAvatarTimestamp(Date.now());
       }
@@ -221,25 +220,26 @@ function TaskDashboard({ onLogout }) {
 
   return (
     <div>
-      <header className="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-zinc-800 pb-6 gap-4">
-        <div className="flex items-center gap-4">
-          <span className="text-4xl text-emerald-500 filter drop-shadow-[0_0_10px_rgba(16,185,129,0.9)] pr-1">
+      {/* UPDATED: Changed flex-col to flex-row and reduced padding/margin for mobile */}
+      <header className="flex flex-row justify-between items-center mb-6 md:mb-8 border-b border-zinc-800 pb-4 md:pb-6 gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
+          <span className="text-3xl md:text-4xl text-emerald-500 filter drop-shadow-[0_0_10px_rgba(16,185,129,0.9)] pr-1">
             ⟡
           </span>
           <div className="flex flex-col">
-            <h1 className="text-3xl font-black tracking-tight text-white leading-none">
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white leading-none">
               FAROS
             </h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="h-px w-6 bg-emerald-500/50"></span>
-              <p className="text-[0.65rem] text-emerald-500 font-bold tracking-[0.2em] uppercase">
+              <span className="h-px w-4 md:w-6 bg-emerald-500/50"></span>
+              <p className="text-[0.55rem] md:text-[0.65rem] text-emerald-500 font-bold tracking-[0.2em] uppercase">
                 Navigate your backlog
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center">
           <UserMenu
             username={user?.username}
             email={user?.email}
@@ -250,6 +250,7 @@ function TaskDashboard({ onLogout }) {
         </div>
       </header>
 
+      {/* ... (rest of the component remains unchanged) */}
       {error && (
         <div className="mb-6 p-4 bg-red-950/20 border border-red-900/50 rounded-lg flex justify-between items-center text-red-400">
           <div className="flex items-center gap-3">
