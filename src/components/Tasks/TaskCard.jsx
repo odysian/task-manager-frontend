@@ -1,5 +1,5 @@
 import { ChevronDown, Pencil, Trash2, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ActivityTimeline from '../Activity/ActivityTimeline';
 import CommentsSection from '../Comments/CommentsSection';
 import FilesSection from '../Files/FilesSection';
@@ -10,6 +10,10 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
   const [isEditing, setIsEditing] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareCount, setShareCount] = useState(task.share_count || 0);
+
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [descNeedsCollapse, setDescNeedsCollapse] = useState(false);
+  const descriptionRef = useRef(null);
 
   const [editForm, setEditForm] = useState({
     title: task.title,
@@ -23,6 +27,15 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
     setShareCount(task.share_count || 0);
   }, [task.share_count]);
 
+  useEffect(() => {
+    if (descriptionRef.current && isExpanded) {
+      const isOverflowing =
+        descriptionRef.current.scrollHeight >
+        descriptionRef.current.clientHeight;
+      setDescNeedsCollapse(isOverflowing);
+    }
+  }, [task.description, isExpanded]);
+
   const canEdit = isOwner || task.my_permission === 'edit';
   const isOverdue =
     task.due_date && !task.completed && new Date(task.due_date) < new Date();
@@ -31,11 +44,9 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
     header:
       'flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-800/50 transition-colors gap-3',
     checkbox:
-      'w-5 h-5 accent-emerald-500 cursor-pointer rounded bg-zinc-800 border-zinc-600 focus:ring-emerald-500 shrink-0',
-    // REDUCED: Changed px-14 to px-4 md:pl-14 md:pr-6 and pb-4 to pb-2
+      'w-5 h-5 accent-emerald-500 cursor-pointer rounded bg-zinc-900 border-zinc-600 focus:ring-emerald-500 shrink-0',
     detailsContainer:
       'px-4 md:pl-14 md:pr-6 pb-2 pt-0 text-sm animate-in slide-in-from-top-2 duration-200',
-    // REDUCED: Changed pt-4 to pt-3 and gap-4 to gap-y-3
     detailsGrid:
       'pt-3 border-t border-zinc-800/50 grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8',
     label: 'text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1',
@@ -207,10 +218,14 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
             className={styles.checkbox}
           />
 
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex items-center gap-2 min-w-0">
+              {/* UPDATED: Added truncate (collapsed) vs wrap (expanded) logic and title attribute for hover */}
               <span
-                className={`font-medium transition-all ${
+                title={task.title}
+                className={`font-medium transition-all min-w-0 ${
+                  isExpanded ? 'break-words' : 'truncate'
+                } ${
                   task.completed
                     ? 'line-through text-zinc-600'
                     : 'text-zinc-100 group-hover:text-white'
@@ -312,15 +327,28 @@ function TaskCard({ task, onToggle, onDelete, onUpdate, isOwner = true }) {
       {isExpanded && (
         <div className={styles.detailsContainer}>
           <div className={styles.detailsGrid}>
-            {/* REDUCED: Removed md:col-span-2 to let it sit side-by-side with metadata on desktop */}
             <div>
               <p className={styles.label}>Description</p>
-              <p className="text-zinc-300 whitespace-pre-wrap leading-tight">
-                {task.description || 'No description provided.'}
-              </p>
+              <div className="relative">
+                <p
+                  ref={descriptionRef}
+                  className={`text-zinc-300 whitespace-pre-wrap leading-tight break-words ${
+                    !isDescExpanded ? 'line-clamp-3' : ''
+                  }`}
+                >
+                  {task.description || 'No description provided.'}
+                </p>
+                {(descNeedsCollapse || isDescExpanded) && (
+                  <button
+                    onClick={() => setIsDescExpanded(!isDescExpanded)}
+                    className="text-[10px] font-bold text-emerald-500/70 hover:text-emerald-400 mt-1 uppercase tracking-wider block"
+                  >
+                    {isDescExpanded ? 'Show less' : 'Read more'}
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* REDUCED: Removed md:col-span-2 and tightened spacing */}
             <div className="flex flex-col gap-3">
               <div className="flex gap-6">
                 <div>
