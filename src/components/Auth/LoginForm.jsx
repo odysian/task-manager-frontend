@@ -34,14 +34,6 @@ function LoginForm({
             Navigate your backlog
           </p>
         </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-3 bg-red-950/30 border border-red-900/50 rounded text-red-400 text-sm text-center">
-            {error}
-          </div>
-        )}
-
         {/* Form */}
         <div className="space-y-6">
           <div>

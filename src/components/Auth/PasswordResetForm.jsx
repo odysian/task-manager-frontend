@@ -1,13 +1,8 @@
-import {
-  AlertCircle,
-  CheckCircle,
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-} from 'lucide-react';
+import { CheckCircle, Eye, EyeOff, Loader2, Lock } from 'lucide-react';
 import { useState } from 'react';
-import api from '../../api';
+import { toast } from 'sonner';
+import { THEME } from '../../styles/theme';
+import { userService } from '../../services/userService';
 
 function PasswordResetForm({ token, onSwitchToLogin }) {
   const [formData, setFormData] = useState({
@@ -21,7 +16,6 @@ function PasswordResetForm({ token, onSwitchToLogin }) {
   });
 
   const [status, setStatus] = useState('idle');
-  const [errorMessage, setErrorMessage] = useState('');
 
   const toggleVisibility = (field) => {
     setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
@@ -29,21 +23,20 @@ function PasswordResetForm({ token, onSwitchToLogin }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage('');
 
     if (formData.new_password.length < 8) {
-      setErrorMessage('Password must be at least 8 characters');
+      toast.error('Password must be at least 8 characters');
       return;
     }
     if (formData.new_password !== formData.confirm_password) {
-      setErrorMessage('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
 
     setStatus('loading');
 
     try {
-      await api.post('/auth/password-reset/verify', {
+      await userService.resetPassword({
         token: token,
         new_password: formData.new_password,
       });
@@ -51,8 +44,8 @@ function PasswordResetForm({ token, onSwitchToLogin }) {
 
       setTimeout(() => onSwitchToLogin(), 3000);
     } catch (err) {
-      setStatus('error');
-      setErrorMessage(
+      setStatus('idle');
+      toast.error(
         err.response?.data?.detail ||
           'Failed to reset password. Link may be expired.'
       );
@@ -61,15 +54,13 @@ function PasswordResetForm({ token, onSwitchToLogin }) {
 
   const renderPasswordInput = (label, name, visibilityKey, placeholder) => (
     <div>
-      <label className="block text-xs font-bold text-zinc-500 uppercase mb-1.5">
-        {label}
-      </label>
+      <label className={THEME.label}>{label}</label>
       <div className="relative">
         <input
           type={showPasswords[visibilityKey] ? 'text' : 'password'}
           value={formData[name]}
           onChange={(e) => setFormData({ ...formData, [name]: e.target.value })}
-          className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:border-emerald-500 focus:outline-none transition-colors pr-10"
+          className={THEME.input}
           placeholder={placeholder}
           required
         />
@@ -102,7 +93,7 @@ function PasswordResetForm({ token, onSwitchToLogin }) {
           </p>
           <button
             onClick={onSwitchToLogin}
-            className="block w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-bold transition-colors"
+            className={THEME.button.secondary + ' w-full py-3'}
           >
             Log In Now
           </button>
@@ -121,16 +112,6 @@ function PasswordResetForm({ token, onSwitchToLogin }) {
           <h2 className="text-2xl font-bold text-white">Set New Password</h2>
         </div>
 
-        {status === 'error' && (
-          <div className="mb-6 p-4 bg-red-950/30 border border-red-900/50 rounded-lg text-red-400 text-sm flex gap-3 items-start">
-            <AlertCircle size={18} className="shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold">Reset Failed</p>
-              <p>{errorMessage}</p>
-            </div>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-5">
           {renderPasswordInput(
             'New Password',
@@ -148,7 +129,10 @@ function PasswordResetForm({ token, onSwitchToLogin }) {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
+            className={
+              THEME.button.primary +
+              ' w-full py-3 flex items-center justify-center gap-2'
+            }
           >
             {status === 'loading' ? (
               <>

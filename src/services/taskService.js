@@ -27,6 +27,14 @@ export const taskService = {
     api.get(`/files/${fileId}`, { responseType: 'blob' }),
   deleteFile: (fileId) => api.delete(`/files/${fileId}`),
 
+  // Sharing
+  getShares: (taskId) => api.get(`/tasks/${taskId}/shares`),
+  shareTask: (taskId, data) => api.post(`/tasks/${taskId}/share`, data),
+  updateShare: (taskId, username, data) =>
+    api.put(`/tasks/${taskId}/share/${username}`, data),
+  revokeShare: (taskId, username) =>
+    api.delete(`/tasks/${taskId}/share/${username}`),
+
   // Activity methods
   getTaskActivity: (taskId) => api.get(`/activity/tasks/${taskId}`),
   getGlobalActivity: () => api.get('/activity'),

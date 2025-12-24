@@ -1,24 +1,27 @@
 import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 import { useState } from 'react';
-import api from '../../api';
+import { toast } from 'sonner';
+import { userService } from '../../services/userService';
+import { THEME } from '../../styles/theme';
 
 function ForgotPasswordForm({ onSwitchToLogin }) {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('idle'); // idle, loading, success, error
-  const [errorMessage, setErrorMessage] = useState('');
+  const [status, setStatus] = useState('idle'); // idle, loading, success
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('loading');
-    setErrorMessage('');
 
     try {
-      await api.post('/auth/password-reset/request', { email });
+      await userService.requestPasswordReset(email);
       setStatus('success');
+      toast.success('Reset link sent');
     } catch (err) {
       console.error(err);
-      setErrorMessage('Something went wrong. Please try again later.');
-      setStatus('error');
+      toast.error(
+        err.response?.data?.detail || 'Something went wrong. Please try again.'
+      );
+      setStatus('idle');
     }
   };
 
@@ -38,7 +41,7 @@ function ForgotPasswordForm({ onSwitchToLogin }) {
           </p>
           <button
             onClick={onSwitchToLogin}
-            className="block w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-bold transition-colors"
+            className={THEME.button.secondary + ' w-full py-3'}
           >
             Back to Login
           </button>
@@ -64,22 +67,14 @@ function ForgotPasswordForm({ onSwitchToLogin }) {
           password.
         </p>
 
-        {status === 'error' && (
-          <div className="mb-6 p-4 bg-red-950/30 border border-red-900/50 rounded-lg text-red-400 text-sm">
-            {errorMessage}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-xs font-bold text-zinc-500 uppercase mb-1.5">
-              Email Address
-            </label>
+            <label className={THEME.label}>Email Address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:border-emerald-500 focus:outline-none transition-colors"
+              className={THEME.input}
               placeholder="you@example.com"
               required
             />
@@ -88,7 +83,10 @@ function ForgotPasswordForm({ onSwitchToLogin }) {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
+            className={
+              THEME.button.primary +
+              ' w-full py-3 flex items-center justify-center gap-2'
+            }
           >
             {status === 'loading' ? (
               <>

@@ -8,15 +8,15 @@ import {
   Share2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import api from '../../api';
+import { toast } from 'sonner';
+import { userService } from '../../services/userService';
+import { THEME } from '../../styles/theme'; // Import theme
 
 function NotificationsSection() {
   const [preferences, setPreferences] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     fetchPreferences();
@@ -24,13 +24,13 @@ function NotificationsSection() {
 
   const fetchPreferences = async () => {
     setLoading(true);
-    setError('');
     try {
-      const response = await api.get('/notifications/preferences');
+      // FIXED: Added parentheses to call the function
+      const response = await userService.getPreferences();
       setPreferences(response.data);
     } catch (err) {
       console.error('Failed to load preferences:', err);
-      setError('Failed to load notification preferences');
+      toast.error('Failed to load notification preferences');
     } finally {
       setLoading(false);
     }
@@ -39,26 +39,19 @@ function NotificationsSection() {
   const handleToggle = (key) => {
     setPreferences({ ...preferences, [key]: !preferences[key] });
     setHasChanges(true);
-    setSuccess('');
   };
 
   const handleSave = async () => {
     setSaving(true);
-    setError('');
-    setSuccess('');
     try {
-      const response = await api.patch(
-        '/notifications/preferences',
-        preferences
-      );
+      const response = await userService.updatePreferences(preferences);
       setPreferences(response.data);
       setHasChanges(false);
-      setSuccess('Preferences saved successfully!');
-
-      setTimeout(() => setSuccess(''), 3000);
+      // REPLACED: Local state with toast
+      toast.success('Preferences saved successfully!');
     } catch (err) {
       console.error('Failed to save preferences:', err);
-      setError('Failed to save preferences');
+      toast.error('Failed to save preferences');
     } finally {
       setSaving(false);
     }
@@ -67,8 +60,6 @@ function NotificationsSection() {
   const handleCancel = () => {
     fetchPreferences();
     setHasChanges(false);
-    setSuccess('');
-    setError('');
   };
 
   const notificationTypes = [
@@ -116,21 +107,7 @@ function NotificationsSection() {
 
   return (
     <div className="space-y-6">
-      {error && (
-        <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-lg text-red-400 text-sm flex items-center gap-2">
-          <span>⚠️</span>
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-emerald-950/30 border border-emerald-900/50 rounded-lg text-emerald-400 text-sm flex items-center gap-2">
-          <CheckCircle size={16} />
-          {success}
-        </div>
-      )}
-
-      <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
+      <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-emerald-900/30 border border-emerald-500/30 flex items-center justify-center shrink-0">
@@ -150,6 +127,7 @@ function NotificationsSection() {
             </div>
           </div>
 
+          {/* Toggle Switch */}
           <button
             onClick={() => handleToggle('email_enabled')}
             disabled={!preferences.email_verified}
@@ -180,9 +158,7 @@ function NotificationsSection() {
             : 'opacity-40'
         }`}
       >
-        <h5 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-          Notify me about
-        </h5>
+        <h5 className={THEME.label}>Notify me about</h5>
 
         {notificationTypes.map((type) => (
           <div
@@ -228,21 +204,24 @@ function NotificationsSection() {
       </div>
 
       {hasChanges && (
-        <div className="flex items-center gap-3 p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
+        <div className="flex items-center gap-3 p-4 bg-zinc-900 border border-zinc-800 rounded-lg animate-in slide-in-from-bottom-2">
           <div className="flex-1 text-sm text-zinc-400">
             You have unsaved changes
           </div>
+          {/* UPDATED: Theme Classes */}
           <button
             onClick={handleCancel}
             disabled={saving}
-            className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+            className={THEME.button.secondary + ' py-2 text-sm'}
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+            className={
+              THEME.button.primary + ' py-2 text-sm flex items-center gap-2'
+            }
           >
             {saving ? (
               <>
