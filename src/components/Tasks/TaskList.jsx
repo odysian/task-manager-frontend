@@ -1,14 +1,14 @@
 import TaskCard from './TaskCard';
+import TaskSkeleton from './TaskSkeleton';
 
 function TaskList({ tasks, loading, onToggle, onDelete, onUpdate, isOwner }) {
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <div className="w-10 h-10 border-4 border-zinc-800 border-t-emerald-500 rounded-full animate-spin mb-4"></div>
-
-        <p className="text-zinc-500 text-sm animate-pulse">
-          Synchronizing tasks...
-        </p>
+      <div className="space-y-3">
+        {/* Show 5 skeletons while loading */}
+        {[...Array(5)].map((_, i) => (
+          <TaskSkeleton key={i} />
+        ))}
       </div>
     );
   }
