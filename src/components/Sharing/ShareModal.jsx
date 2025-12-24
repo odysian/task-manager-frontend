@@ -7,7 +7,6 @@ import ShareList from './ShareList';
 function ShareModal({ taskId, onClose, onCountChange }) {
   const [shares, setShares] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
@@ -27,7 +26,7 @@ function ShareModal({ taskId, onClose, onCountChange }) {
         setShares(data);
       } catch (err) {
         console.error('Failed to load shares:', err);
-        setError('Could not load access list');
+        toast.error('Could not load access list');
       } finally {
         setLoading(false);
       }
@@ -36,7 +35,6 @@ function ShareModal({ taskId, onClose, onCountChange }) {
   }, [taskId]);
 
   const handleShare = async (user, permission) => {
-    setError('');
     try {
       const response = await api.post(`/tasks/${taskId}/share`, {
         shared_with_username: user.username,
@@ -46,7 +44,7 @@ function ShareModal({ taskId, onClose, onCountChange }) {
       setSuccess(`Shared with ${user.username}`);
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to share');
+      toast.error('Failed to share');
     }
   };
 
@@ -57,7 +55,7 @@ function ShareModal({ taskId, onClose, onCountChange }) {
         prev.filter((s) => s.shared_with_username !== username)
       );
     } catch (err) {
-      setError('Failed to revoke access');
+      toast.error('Failed to revoke access');
     }
   };
 
@@ -75,7 +73,7 @@ function ShareModal({ taskId, onClose, onCountChange }) {
       );
     } catch (err) {
       console.error('Update failed:', err);
-      setError('Failed to update permission');
+      toast.error('Failed to update permission');
     }
   };
 
@@ -104,11 +102,6 @@ function ShareModal({ taskId, onClose, onCountChange }) {
         </div>
 
         <div className="p-4 space-y-6">
-          {error && (
-            <div className="p-3 bg-red-950/30 border border-red-900/50 rounded text-red-400 text-sm">
-              {error}
-            </div>
-          )}
           {success && (
             <div className="p-3 bg-emerald-950/30 border border-emerald-900/50 rounded text-emerald-400 text-sm">
               {success}

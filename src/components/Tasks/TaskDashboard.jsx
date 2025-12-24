@@ -47,6 +47,7 @@ function TaskDashboard({ onLogout }) {
       if (isUpdate) setAvatarTimestamp(Date.now());
     } catch (err) {
       console.error('Failed to load profile:', err);
+      toast.error('Failed to load profile');
     }
   };
 

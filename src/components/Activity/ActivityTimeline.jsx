@@ -1,12 +1,12 @@
 import { ChevronDown, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import api from '../../api';
 import ActivityItem from './ActivityItem';
 
 function ActivityTimeline({ taskId, isExpanded }) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(false);
 
   useEffect(() => {
@@ -17,13 +17,12 @@ function ActivityTimeline({ taskId, isExpanded }) {
 
   const fetchTimeline = async () => {
     setLoading(true);
-    setError('');
     try {
       const response = await api.get(`/activity/tasks/${taskId}`);
       setActivities(response.data);
     } catch (err) {
       console.error('Failed to fetch timeline:', err);
-      setError('Failed to load history');
+      toast.error('Failed to load history');
     } finally {
       setLoading(false);
     }
@@ -60,12 +59,6 @@ function ActivityTimeline({ taskId, isExpanded }) {
 
       {isTimelineExpanded && (
         <div className="mt-2 pl-2">
-          {error && (
-            <div className="p-1.5 bg-red-950/30 border border-red-900/50 rounded text-red-400 text-[10px] mb-2">
-              {error}
-            </div>
-          )}
-
           {loading && (
             <div className="flex justify-center py-2">
               <div className="w-4 h-4 border-2 border-zinc-700 border-t-emerald-500 rounded-full animate-spin"></div>
