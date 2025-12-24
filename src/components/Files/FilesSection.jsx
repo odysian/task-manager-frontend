@@ -1,7 +1,8 @@
 import { FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import api from '../../api';
+import { taskService } from '../../services/taskService';
+import ConfirmModal from '../Common/ConfirmModal';
 import FileItem from './FileItem';
 import FileUploadZone from './FileUploadZone';
 
@@ -10,6 +11,7 @@ function FilesSection({ taskId, isExpanded, canUpload, canDelete }) {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [fileToDelete, setFileToDelete] = useState(null);
 
   useEffect(() => {
     if (isExpanded && files.length === 0) {
@@ -20,7 +22,7 @@ function FilesSection({ taskId, isExpanded, canUpload, canDelete }) {
   const fetchFiles = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/tasks/${taskId}/files`);
+      const response = await taskService.getFiles(taskId);
       setFiles(response.data);
     } catch (err) {
       console.error('Failed to fetch files:', err);
@@ -39,15 +41,16 @@ function FilesSection({ taskId, isExpanded, canUpload, canDelete }) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await api.post(`/tasks/${taskId}/files`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: (progressEvent) => {
+      const response = await taskService.uploadFile(
+        taskId,
+        formData,
+        (progressEvent) => {
           const progress = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
           );
           setUploadProgress(progress);
-        },
-      });
+        }
+      );
       setFiles([...files, response.data]);
     } catch (err) {
       toast.error('Upload failed');
@@ -59,9 +62,7 @@ function FilesSection({ taskId, isExpanded, canUpload, canDelete }) {
 
   const handleDownload = async (fileId, filename) => {
     try {
-      const response = await api.get(`/files/${fileId}`, {
-        responseType: 'blob',
-      });
+      const response = await taskService.downloadFile(fileId);
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -75,13 +76,20 @@ function FilesSection({ taskId, isExpanded, canUpload, canDelete }) {
     }
   };
 
-  const handleDelete = async (fileId) => {
-    if (!window.confirm('Delete this file?')) return;
+  const handleDeleteRequest = (fileId) => {
+    const file = files.find((f) => f.id === fileId);
+    setFileToDelete(file);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!fileToDelete) return;
     try {
-      await api.delete(`/files/${fileId}`);
-      setFiles(files.filter((f) => f.id !== fileId));
+      await taskService.deleteFile(fileToDelete.id);
+      setFiles(files.filter((f) => f.id !== fileToDelete.id));
     } catch (err) {
       toast.error('Failed to delete file');
+    } finally {
+      setFileToDelete(null);
     }
   };
 
@@ -115,7 +123,7 @@ function FilesSection({ taskId, isExpanded, canUpload, canDelete }) {
               key={file.id}
               file={file}
               onDownload={handleDownload}
-              onDelete={handleDelete}
+              onDelete={() => handleDeleteRequest(file.id)}
               canDelete={canDelete}
             />
           ))}
@@ -123,6 +131,19 @@ function FilesSection({ taskId, isExpanded, canUpload, canDelete }) {
       ) : (
         <p className="text-center py-2 text-zinc-600 text-xs">No files</p>
       )}
+
+      <ConfirmModal
+        isOpen={!!fileToDelete}
+        title="Delete File?"
+        message={
+          fileToDelete
+            ? `Are you sure you want to remove "${fileToDelete.original_filename}"? This action cannot be undone.`
+            : ''
+        }
+        confirmText="Delete File"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setFileToDelete(null)}
+      />
     </div>
   );
 }

@@ -1,11 +1,6 @@
+import { THEME } from '../../styles/theme'; // Import centralized theme
+
 function TaskForm({ formData, onFormChange, onAddTask }) {
-  const inputClasses =
-    'w-full p-3 rounded bg-zinc-900 border border-zinc-700 text-white ' +
-    'focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 ' +
-    'focus:outline-none transition-all placeholder-zinc-500';
-
-  const labelClasses = 'block text-zinc-400 text-sm font-bold mb-1';
-
   return (
     <div className="mb-4 p-4 md:p-5 bg-zinc-900/30 border border-zinc-800 rounded-xl shadow-sm">
       <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -13,23 +8,23 @@ function TaskForm({ formData, onFormChange, onAddTask }) {
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="md:col-span-2">
-          <label className={labelClasses}>Task Title</label>
+          <label className={THEME.label}>Task Title</label>
           <input
             type="text"
             placeholder="e.g. Deploy to Production"
             value={formData.title}
             onChange={(e) => onFormChange('title', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onAddTask()}
-            className={inputClasses}
+            className={THEME.input}
           />
         </div>
 
         <div>
-          <label className={labelClasses}>Priority Level</label>
+          <label className={THEME.label}>Priority Level</label>
           <select
             value={formData.priority}
             onChange={(e) => onFormChange('priority', e.target.value)}
-            className={inputClasses}
+            className={THEME.input}
           >
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -38,42 +33,39 @@ function TaskForm({ formData, onFormChange, onAddTask }) {
         </div>
 
         <div>
-          <label className={labelClasses}>Due Date</label>
+          <label className={THEME.label}>Due Date</label>
           <input
             type="date"
             value={formData.due_date}
             onChange={(e) => onFormChange('due_date', e.target.value)}
-            className={inputClasses}
+            className={THEME.input}
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className={labelClasses}>Tags</label>
+          <label className={THEME.label}>Tags</label>
           <input
             type="text"
             placeholder="work, urgent, frontend..."
             value={formData.tags}
             onChange={(e) => onFormChange('tags', e.target.value)}
-            className={inputClasses}
+            className={THEME.input}
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className={labelClasses}>Description</label>
+          <label className={THEME.label}>Description</label>
           <textarea
             placeholder="Add extra details..."
             value={formData.description}
             onChange={(e) => onFormChange('description', e.target.value)}
             rows={3}
-            className={`${inputClasses} resize-y min-h-20`}
+            className={`${THEME.input} resize-y min-h-20`}
           />
         </div>
 
         <div className="md:col-span-2 mt-1">
-          <button
-            onClick={onAddTask}
-            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-lg shadow-emerald-900/20 active:scale-[0.99]"
-          >
+          <button onClick={onAddTask} className={THEME.button.primary}>
             + Add Task
           </button>
         </div>

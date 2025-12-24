@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import api from '../../api';
+import { taskService } from '../../services/taskService';
 import CommentForm from './CommentForm';
 import CommentItem from './CommentItem';
 
@@ -12,7 +12,7 @@ function CommentsSection({ taskId, isTaskOwner }) {
   const fetchComments = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/tasks/${taskId}/comments`);
+      const response = await taskService.getComments(taskId);
       setComments(response.data);
     } catch (err) {
       console.error('Failed to load comments:', err);
@@ -28,11 +28,13 @@ function CommentsSection({ taskId, isTaskOwner }) {
 
   const handleAddComment = async (content) => {
     try {
-      const response = await api.post(`/tasks/${taskId}/comments`, { content });
+      const response = await taskService.addComment(taskId, content);
       setComments((prev) => [response.data, ...prev]);
+      toast.success('Comment added');
       return true;
     } catch (err) {
       console.error('Failed to post comment:', err);
+      toast.error('Failed to add comment');
       throw err;
     }
   };
@@ -41,37 +43,35 @@ function CommentsSection({ taskId, isTaskOwner }) {
     const previousComments = [...comments];
     setComments(comments.filter((c) => c.id !== commentId));
     try {
-      await api.delete(`/comments/${commentId}`);
+      await taskService.deleteComment(commentId);
+      toast.success('Comment deleted');
     } catch (err) {
       console.error('Failed to delete comment:', err);
       setComments(previousComments);
-      alert('Failed to delete comment');
+      toast.error('Failed to delete comment');
     }
   };
 
   const handleUpdateComment = async (commentId, newContent) => {
     try {
-      const response = await api.patch(`/comments/${commentId}`, {
-        content: newContent,
-      });
+      const response = await taskService.updateComment(commentId, newContent);
       setComments(
         comments.map((c) => (c.id === commentId ? response.data : c))
       );
+      toast.success('Comment updated');
     } catch (err) {
       console.error('Failed to update comment:', err);
+      toast.error('Failed to update comment');
       throw err;
     }
   };
 
   return (
-    // REDUCED: mt-6 pt-6 to mt-4 pt-4
     <div className="mt-4 pt-4 border-t border-zinc-800/50">
-      {/* REDUCED: mb-4 to mb-2 */}
       <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">
         Discussion ({comments.length})
       </h4>
 
-      {/* REDUCED: mb-6 to mb-3 */}
       <div className="mb-3">
         <CommentForm onSubmit={handleAddComment} />
       </div>
@@ -88,7 +88,6 @@ function CommentsSection({ taskId, isTaskOwner }) {
         </div>
       )}
 
-      {/* REDUCED: space-y-4 to space-y-2 */}
       <div className="space-y-2">
         {comments.map((comment) => (
           <CommentItem
