@@ -1,7 +1,7 @@
 import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { userService } from '../../services/userService';
+import { authService } from '../../services/authService';
 import { THEME } from '../../styles/theme';
 
 function ForgotPasswordForm({ onSwitchToLogin }) {
@@ -13,7 +13,7 @@ function ForgotPasswordForm({ onSwitchToLogin }) {
     setStatus('loading');
 
     try {
-      await userService.requestPasswordReset(email);
+      await authService.requestPasswordReset(email);
       setStatus('success');
       toast.success('Reset link sent');
     } catch (err) {

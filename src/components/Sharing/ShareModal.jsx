@@ -1,13 +1,13 @@
-import { Users, X } from 'lucide-react';
+import { Loader2, Users, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import api from '../../api';
+import { toast } from 'sonner';
+import { taskService } from '../../services/taskService';
 import UserSearch from '../Common/UserSearch';
 import ShareList from './ShareList';
 
 function ShareModal({ taskId, onClose, onCountChange }) {
   const [shares, setShares] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     if (!loading && onCountChange) {
@@ -18,8 +18,7 @@ function ShareModal({ taskId, onClose, onCountChange }) {
   useEffect(() => {
     const fetchShares = async () => {
       try {
-        const response = await api.get(`/tasks/${taskId}/shares`);
-
+        const response = await taskService.getShares(taskId);
         const data = Array.isArray(response.data)
           ? response.data
           : response.data.shares || [];
@@ -35,25 +34,31 @@ function ShareModal({ taskId, onClose, onCountChange }) {
   }, [taskId]);
 
   const handleShare = async (user, permission) => {
+    if (shares.some((s) => s.shared_with_username === user.username)) {
+      toast.error(`${user.username} already has access`);
+      return;
+    }
+
     try {
-      const response = await api.post(`/tasks/${taskId}/share`, {
+      const response = await taskService.shareTask(taskId, {
         shared_with_username: user.username,
         permission,
       });
       setShares((prev) => [...prev, response.data]);
-      setSuccess(`Shared with ${user.username}`);
-      setTimeout(() => setSuccess(''), 3000);
+      toast.success(`Shared with ${user.username}`);
     } catch (err) {
-      toast.error('Failed to share');
+      console.error(err);
+      toast.error(err.response?.data?.detail || 'Failed to share task');
     }
   };
 
   const handleRevoke = async (username) => {
     try {
-      await api.delete(`/tasks/${taskId}/share/${username}`);
+      await taskService.revokeShare(taskId, username);
       setShares((prev) =>
         prev.filter((s) => s.shared_with_username !== username)
       );
+      toast.success(`Removed access for ${username}`);
     } catch (err) {
       toast.error('Failed to revoke access');
     }
@@ -61,7 +66,7 @@ function ShareModal({ taskId, onClose, onCountChange }) {
 
   const handleUpdate = async (username, newPermission) => {
     try {
-      await api.put(`/tasks/${taskId}/share/${username}`, {
+      await taskService.updateShare(taskId, username, {
         permission: newPermission,
       });
       setShares((prev) =>
@@ -71,6 +76,7 @@ function ShareModal({ taskId, onClose, onCountChange }) {
             : share
         )
       );
+      toast.success(`Updated permissions for ${username}`);
     } catch (err) {
       console.error('Update failed:', err);
       toast.error('Failed to update permission');
@@ -102,12 +108,6 @@ function ShareModal({ taskId, onClose, onCountChange }) {
         </div>
 
         <div className="p-4 space-y-6">
-          {success && (
-            <div className="p-3 bg-emerald-950/30 border border-emerald-900/50 rounded text-emerald-400 text-sm">
-              {success}
-            </div>
-          )}
-
           <div>
             <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 block">
               Add People
@@ -121,7 +121,7 @@ function ShareModal({ taskId, onClose, onCountChange }) {
             </label>
             {loading ? (
               <div className="flex justify-center py-4">
-                <span className="w-5 h-5 border-2 border-zinc-600 border-t-emerald-500 rounded-full animate-spin"></span>
+                <Loader2 size={24} className="text-emerald-500 animate-spin" />
               </div>
             ) : (
               <ShareList

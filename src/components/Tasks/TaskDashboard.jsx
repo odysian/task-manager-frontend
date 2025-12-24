@@ -1,9 +1,9 @@
 import { Activity, FolderOpen, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import api from '../../api';
 import { useTasks } from '../../hooks/useTasks';
 import { taskService } from '../../services/taskService';
+import { userService } from '../../services/userService'; // Import userService
 import { THEME } from '../../styles/theme';
 import ActivityTimeline from '../Activity/ActivityTimeline';
 import UserMenu from '../Common/UserMenu';
@@ -15,13 +15,17 @@ function TaskDashboard({ onLogout }) {
   const [user, setUser] = useState(null);
   const [avatarTimestamp, setAvatarTimestamp] = useState(Date.now());
   const [showSettings, setShowSettings] = useState(false);
+
+  // View State
   const [page, setPage] = useState(1);
-  const [view, setView] = useState('personal');
+  const [view, setView] = useState('personal'); // 'personal', 'shared', 'activity'
+
   const [filters, setFilters] = useState({
     search: '',
     priority: '',
     status: '',
   });
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -30,6 +34,7 @@ function TaskDashboard({ onLogout }) {
     tags: '',
   });
 
+  // Custom hook for task data management
   const {
     tasks,
     setTasks,
@@ -40,23 +45,26 @@ function TaskDashboard({ onLogout }) {
     fetchStats,
   } = useTasks(filters, page, view);
 
+  // Use userService instead of raw api call
   const fetchProfile = async (isUpdate = false) => {
     try {
-      const response = await api.get('/users/me');
+      const response = await userService.getProfile();
       setUser(response.data);
       if (isUpdate) setAvatarTimestamp(Date.now());
     } catch (err) {
       console.error('Failed to load profile:', err);
-      toast.error('Failed to load profile');
+      toast.error('Failed to load user profile');
     }
   };
 
   useEffect(() => {
     fetchProfile(false);
   }, []);
+
   useEffect(() => {
     setPage(1);
   }, [filters, view]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchTasks();
@@ -67,19 +75,24 @@ function TaskDashboard({ onLogout }) {
 
   const addTask = async () => {
     if (!formData.title.trim()) return;
+
     try {
       const taskData = {
         ...formData,
+        due_date: formData.due_date ? formData.due_date : null,
         tags: formData.tags
           ? formData.tags.split(',').map((tag) => tag.trim())
           : [],
       };
+
       const response = await taskService.createTask(taskData);
+
       if (view === 'shared') setView('personal');
       else {
         setTasks([response.data, ...tasks]);
         fetchStats();
       }
+
       setFormData({
         title: '',
         description: '',
@@ -87,9 +100,10 @@ function TaskDashboard({ onLogout }) {
         due_date: '',
         tags: '',
       });
-      toast.success('Task created');
+      toast.success('Task created successfully');
     } catch (err) {
-      toast.error('Failed to create task');
+      console.error(err);
+      toast.error(err.response?.data?.detail || 'Failed to create task');
     }
   };
 
@@ -103,7 +117,7 @@ function TaskDashboard({ onLogout }) {
       );
       fetchStats();
     } catch (err) {
-      toast.error('Failed to update task');
+      toast.error('Failed to update task status');
     }
   };
 
@@ -124,6 +138,7 @@ function TaskDashboard({ onLogout }) {
 
   return (
     <div>
+      {/* Header */}
       <header className="flex flex-row justify-between items-center mb-4 border-b border-zinc-800 pb-4 md:pb-2 gap-4">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="text-3xl md:text-4xl text-emerald-500 filter drop-shadow-[0_0_10px_rgba(16,185,129,0.9)] pr-1">
@@ -150,6 +165,7 @@ function TaskDashboard({ onLogout }) {
         />
       </header>
 
+      {/* View Switcher */}
       <div className="flex justify-center mb-4">
         <div className="flex bg-zinc-900 p-1 rounded-lg border border-zinc-800 gap-1">
           <button
@@ -188,6 +204,7 @@ function TaskDashboard({ onLogout }) {
         </div>
       </div>
 
+      {/* View: Personal Tasks */}
       {view === 'personal' && (
         <>
           <div className="grid grid-cols-4 gap-2 mb-4">
@@ -224,6 +241,7 @@ function TaskDashboard({ onLogout }) {
               </p>
             </div>
           </div>
+
           <TaskForm
             formData={formData}
             onFormChange={(field, val) =>
@@ -231,7 +249,10 @@ function TaskDashboard({ onLogout }) {
             }
             onAddTask={addTask}
           />
+
           <div className="my-4 border-t border-neutral-800" />
+
+          {/* Filters */}
           <div className="flex flex-col md:flex-row gap-3 md:gap-4 p-4 mb-4 bg-zinc-900/50 border border-emerald-900/30 rounded-lg items-center">
             <input
               type="text"
@@ -279,6 +300,7 @@ function TaskDashboard({ onLogout }) {
         </>
       )}
 
+      {/* View: Shared Tasks Header */}
       {view === 'shared' && (
         <div className="mb-6 p-6 bg-zinc-900/30 border border-zinc-800 rounded-xl text-center">
           <Share2 className="w-10 h-10 text-emerald-500 mx-auto mb-3 opacity-80" />
@@ -286,15 +308,20 @@ function TaskDashboard({ onLogout }) {
           <p className="text-zinc-500 text-sm mt-1">Shared by others.</p>
         </div>
       )}
+
+      {/* View: Activity Header */}
       {view === 'activity' && (
         <div className="max-w-2xl mx-auto">
           <div className="mb-6 p-6 bg-zinc-900/30 border border-zinc-800 rounded-xl text-center">
             <Activity className="w-10 h-10 text-blue-500 mx-auto mb-3 opacity-80" />
             <h2 className="text-xl font-bold text-white">Activity Log</h2>
           </div>
+          {/* Note: This component might need props to function as a global feed */}
           <ActivityTimeline />
         </div>
       )}
+
+      {/* Task List (Personal & Shared) */}
       {view !== 'activity' && (
         <TaskList
           tasks={tasks}
@@ -310,6 +337,7 @@ function TaskDashboard({ onLogout }) {
         />
       )}
 
+      {/* Pagination (Personal Only) */}
       {view === 'personal' && (
         <div className="mt-6 flex justify-center gap-4 items-center text-zinc-400">
           <button
@@ -331,6 +359,8 @@ function TaskDashboard({ onLogout }) {
           </button>
         </div>
       )}
+
+      {/* Modals */}
       {showSettings && user && (
         <SettingsModal
           user={user}

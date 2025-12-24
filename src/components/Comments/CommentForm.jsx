@@ -27,7 +27,6 @@ function CommentForm({
     }
   };
 
-  // REDUCED: Changed padding to py-2 px-3 for a thinner look
   const baseClasses =
     'w-full bg-zinc-900 border border-zinc-700 rounded-lg py-2 px-3 text-sm text-zinc-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder-zinc-600 resize-none';
 
@@ -37,7 +36,6 @@ function CommentForm({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={isEditing ? 'Update...' : 'Add a comment...'}
-        // UPDATED: Forced rows={1} and set a small min-height for "single line" look
         rows={1}
         className={`${baseClasses} ${isEditing ? 'min-h-9.5' : 'min-h-9.5'}`}
         disabled={isSubmitting}

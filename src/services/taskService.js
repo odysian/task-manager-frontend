@@ -1,6 +1,7 @@
 import api from '../api';
 
 export const taskService = {
+  // Tasks
   getTasks: (params, signal) => api.get('/tasks', { params, signal }),
   getSharedTasks: (signal) => api.get('/tasks/shared-with-me', { signal }),
   getStats: () => api.get('/tasks/stats'),
@@ -8,7 +9,7 @@ export const taskService = {
   updateTask: (id, data) => api.patch(`/tasks/${id}`, data),
   deleteTask: (id) => api.delete(`/tasks/${id}`),
 
-  // Comment methods
+  // Comment
   getComments: (taskId) => api.get(`/tasks/${taskId}/comments`),
   addComment: (taskId, content) =>
     api.post(`/tasks/${taskId}/comments`, { content }),
@@ -16,7 +17,7 @@ export const taskService = {
   updateComment: (commentId, content) =>
     api.patch(`/comments/${commentId}`, { content }),
 
-  // File methods
+  // File
   getFiles: (taskId) => api.get(`/tasks/${taskId}/files`),
   uploadFile: (taskId, formData, onProgress) =>
     api.post(`/tasks/${taskId}/files`, formData, {
@@ -35,7 +36,7 @@ export const taskService = {
   revokeShare: (taskId, username) =>
     api.delete(`/tasks/${taskId}/share/${username}`),
 
-  // Activity methods
+  // Activity
   getTaskActivity: (taskId) => api.get(`/activity/tasks/${taskId}`),
   getGlobalActivity: () => api.get('/activity'),
 };

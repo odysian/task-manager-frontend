@@ -1,14 +1,8 @@
-import {
-  AlertCircle,
-  CheckCircle,
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-} from 'lucide-react';
+import { CheckCircle, Eye, EyeOff, Loader2, Lock } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../api';
+import { authService } from '../services/authService';
 
 function PasswordResetPage() {
   const [searchParams] = useSearchParams();
@@ -20,14 +14,12 @@ function PasswordResetPage() {
     confirm_password: '',
   });
 
-  // Visibility toggles
   const [showPasswords, setShowPasswords] = useState({
     new: false,
     confirm: false,
   });
 
   const [status, setStatus] = useState('idle');
-  const [errorMessage, setErrorMessage] = useState('');
 
   const toggleVisibility = (field) => {
     setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
@@ -51,38 +43,38 @@ function PasswordResetPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage('');
 
     if (formData.new_password.length < 8) {
-      setErrorMessage('Password must be at least 8 characters');
+      toast.error('Password must be at least 8 characters');
       return;
     }
     if (formData.new_password !== formData.confirm_password) {
-      setErrorMessage('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
 
     setStatus('loading');
 
     try {
-      await api.post('/auth/password-reset/verify', {
+      await authService.resetPassword({
         token: token,
         new_password: formData.new_password,
       });
-      setStatus('success');
 
-      // Auto-redirect after 3 seconds
+      setStatus('success');
+      toast.success('Password updated successfully');
+
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
-      setStatus('error');
-      setErrorMessage(
+      setStatus('idle');
+      console.error(err);
+      toast.error(
         err.response?.data?.detail ||
           'Failed to reset password. Link may be expired.'
       );
     }
   };
 
-  // Helper for password inputs
   const renderPasswordInput = (label, name, visibilityKey, placeholder) => (
     <div>
       <label className="block text-xs font-bold text-zinc-500 uppercase mb-1.5">
@@ -93,7 +85,7 @@ function PasswordResetPage() {
           type={showPasswords[visibilityKey] ? 'text' : 'password'}
           value={formData[name]}
           onChange={(e) => setFormData({ ...formData, [name]: e.target.value })}
-          className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:border-emerald-500 focus:outline-none transition-colors pr-10"
+          className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-100 focus:border-emerald-500 focus:outline-none transition-colors pr-10"
           placeholder={placeholder}
           required
         />
@@ -145,16 +137,6 @@ function PasswordResetPage() {
           <h2 className="text-2xl font-bold text-white">Set New Password</h2>
         </div>
 
-        {status === 'error' && (
-          <div className="mb-6 p-4 bg-red-950/30 border border-red-900/50 rounded-lg text-red-400 text-sm flex gap-3 items-start">
-            <AlertCircle size={18} className="shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold">Reset Failed</p>
-              <p>{errorMessage}</p>
-            </div>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-5">
           {renderPasswordInput(
             'New Password',
@@ -172,7 +154,7 @@ function PasswordResetPage() {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {status === 'loading' ? (
               <>

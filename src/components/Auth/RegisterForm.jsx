@@ -12,6 +12,10 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = () => {
+    if (!username || !email || !password) {
+      setLocalError('All fields are required');
+      return;
+    }
     if (password !== confirmPassword) {
       setLocalError("Passwords don't match");
       return;
@@ -21,20 +25,20 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
   };
 
   const inputClasses =
-    'w-full p-3 rounded bg-zinc-900 border border-zinc-700 text-white ' +
-    'focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 ' +
+    'w-full p-3 rounded-lg bg-zinc-900 border border-zinc-700 text-white ' +
+    'focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 ' +
     'focus:outline-none transition-all placeholder-zinc-600';
 
   return (
-    <div className="grid place-items-center h-screen bg-zinc-950 px-4">
-      <div className="w-full max-w-md p-4">
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+      <div className="w-full max-w-md p-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="text-center mb-10">
           <div className="mb-4">
             <span className="text-5xl text-emerald-500 filter drop-shadow-[0_0_10px_rgba(16,185,129,.9)]">
               ⟡
             </span>
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-emerald-50 mb-2">
+          <h1 className="text-4xl font-black tracking-tight text-white mb-2">
             JOIN FAROS
           </h1>
           <p className="text-sm text-emerald-500 font-medium tracking-wide">
@@ -42,9 +46,9 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
           </p>
         </div>
 
-        {(error || localError) && (
-          <div className="mb-6 p-3 bg-red-950/30 border border-red-900/50 rounded text-red-400 text-sm text-center">
-            {error || localError}
+        {localError && (
+          <div className="mb-6 p-3 bg-red-950/30 border border-red-900/50 rounded-lg text-red-400 text-sm text-center">
+            {localError}
           </div>
         )}
 

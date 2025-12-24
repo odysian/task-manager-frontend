@@ -1,6 +1,7 @@
 import { AlertCircle, Calendar, Camera, CheckCircle, Mail } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import api from '../../api';
+import { taskService } from '../../services/taskService';
+import { userService } from '../../services/userService';
 
 function ProfileSection({ user, onUserUpdate, avatarUrl }) {
   const [currentAvatar, setCurrentAvatar] = useState(avatarUrl);
@@ -27,7 +28,7 @@ function ProfileSection({ user, onUserUpdate, avatarUrl }) {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await api.get('/tasks/stats');
+        const response = await taskService.getStats();
         setStats([
           { label: 'Tasks Created', value: response.data.total },
           { label: 'Tasks Shared', value: response.data.tasks_shared },
@@ -63,9 +64,7 @@ function ProfileSection({ user, onUserUpdate, avatarUrl }) {
     try {
       setIsUploading(true);
 
-      const response = await api.post('/users/me/avatar', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await userService.updateAvatar(formData);
 
       const fullUrl = `${import.meta.env.VITE_API_URL}${
         response.data.avatar_url
@@ -91,7 +90,7 @@ function ProfileSection({ user, onUserUpdate, avatarUrl }) {
     setEmailSent(false);
 
     try {
-      await api.post('/notifications/send-verification');
+      await userService.verifyEmail();
       setEmailSent(true);
       setTimeout(() => setEmailSent(false), 5000);
     } catch (err) {

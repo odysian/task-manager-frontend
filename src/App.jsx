@@ -1,24 +1,27 @@
 import { useEffect, useState } from 'react';
-import { toast, Toaster } from 'sonner';
-import api from './api';
+import { toast, Toaster } from 'sonner'; //
 import ForgotPasswordForm from './components/Auth/ForgotPasswordForm';
 import LoginForm from './components/Auth/LoginForm';
 import PasswordResetForm from './components/Auth/PasswordResetForm';
 import RegisterForm from './components/Auth/RegisterForm';
 import TaskDashboard from './components/Tasks/TaskDashboard';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import { authService } from './services/authService'; // Import the service
 
 function App() {
   const [urlToken, setUrlToken] = useState(null);
 
+  // Initialize view based on token presence
   const [currentView, setCurrentView] = useState(() => {
     if (localStorage.getItem('token')) return 'dashboard';
     return 'login';
   });
 
+  // Lifted state for the login form
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  // Handle URL params for verification/reset flows
   useEffect(() => {
     const path = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
@@ -26,7 +29,6 @@ function App() {
 
     if (token) {
       setUrlToken(token);
-
       if (path === '/verify') {
         setCurrentView('verify');
       } else if (path === '/password-reset') {
@@ -37,32 +39,37 @@ function App() {
 
   const handleLogin = async () => {
     try {
-      const response = await api.post('/auth/login', {
+      // Abstracted API call
+      const response = await authService.login({
         username: username,
         password: password,
       });
+
       localStorage.setItem('token', response.data.access_token);
       localStorage.setItem('username', username);
       setCurrentView('dashboard');
       toast.success(`Welcome back, ${username}!`);
     } catch (err) {
-      console.log('Login Error:', err.response?.data);
+      console.error('Login Error:', err);
       toast.error(err.response?.data?.detail || 'Login failed');
     }
   };
 
   const handleRegister = async (regUsername, regPassword, regEmail) => {
     try {
-      await api.post('/auth/register', {
+      // Abstracted API call
+      await authService.register({
         username: regUsername,
         password: regPassword,
         email: regEmail,
       });
 
-      const response = await api.post('/auth/login', {
+      // Auto-login after registration
+      const response = await authService.login({
         username: regUsername,
         password: regPassword,
       });
+
       localStorage.setItem('token', response.data.access_token);
       localStorage.setItem('username', regUsername);
       setCurrentView('dashboard');
@@ -79,6 +86,7 @@ function App() {
     setUsername('');
     setPassword('');
     setCurrentView('login');
+    toast.info('Logged out');
   };
 
   const handleVerificationComplete = () => {
@@ -90,64 +98,64 @@ function App() {
     }
   };
 
+  // View Router
   let content;
-  if (currentView === 'verify') {
-    content = (
-      <VerifyEmailPage
-        token={urlToken}
-        onComplete={handleVerificationComplete}
-      />
-    );
-  } else if (currentView === 'password-reset') {
-    content = (
-      <PasswordResetForm
-        token={urlToken}
-        onSwitchToLogin={() => {
-          window.history.replaceState({}, document.title, '/');
-          setCurrentView('login');
-        }}
-      />
-    );
-  } else if (currentView === 'forgot-password') {
-    content = (
-      <ForgotPasswordForm onSwitchToLogin={() => setCurrentView('login')} />
-    );
-  } else if (currentView === 'dashboard') {
-    content = (
-      <div className="min-h-screen bg-zinc-950 text-zinc-200 py-10 px-4">
-        <div className="max-w-4xl mx-auto">
-          <TaskDashboard onLogout={handleLogout} />
+  switch (currentView) {
+    case 'verify':
+      content = (
+        <VerifyEmailPage
+          token={urlToken}
+          onComplete={handleVerificationComplete}
+        />
+      );
+      break;
+    case 'password-reset':
+      content = (
+        <PasswordResetForm
+          token={urlToken}
+          onSwitchToLogin={() => {
+            window.history.replaceState({}, document.title, '/');
+            setCurrentView('login');
+          }}
+        />
+      );
+      break;
+    case 'forgot-password':
+      content = (
+        <ForgotPasswordForm onSwitchToLogin={() => setCurrentView('login')} />
+      );
+      break;
+    case 'dashboard':
+      content = (
+        <div className="min-h-screen bg-zinc-950 text-zinc-200 py-10 px-4">
+          <div className="max-w-4xl mx-auto">
+            <TaskDashboard onLogout={handleLogout} />
+          </div>
         </div>
-      </div>
-    );
-  } else if (currentView === 'register') {
-    content = (
-      <RegisterForm
-        onRegister={handleRegister}
-        onSwitchToLogin={() => {
-          setCurrentView('login');
-        }}
-      />
-    );
-  } else {
-    content = (
-      <LoginForm
-        username={username}
-        password={password}
-        onUsernameChange={setUsername}
-        onPasswordChange={setPassword}
-        onLogin={handleLogin}
-        onSwitchToRegister={() => {
-          setCurrentView('register');
-        }}
-        onForgotPassword={() => {
-          setCurrentView('forgot-password');
-        }}
-      />
-    );
+      );
+      break;
+    case 'register':
+      content = (
+        <RegisterForm
+          onRegister={handleRegister}
+          onSwitchToLogin={() => setCurrentView('login')}
+        />
+      );
+      break;
+    default: // 'login'
+      content = (
+        <LoginForm
+          username={username}
+          password={password}
+          onUsernameChange={setUsername}
+          onPasswordChange={setPassword}
+          onLogin={handleLogin}
+          onSwitchToRegister={() => setCurrentView('register')}
+          onForgotPassword={() => setCurrentView('forgot-password')}
+        />
+      );
   }
 
-  // 2. Return a single Fragment wrapping the Toaster and the content
   return (
     <>
       <Toaster position="top-right" richColors theme="dark" />

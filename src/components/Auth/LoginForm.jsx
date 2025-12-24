@@ -1,5 +1,6 @@
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import { THEME } from '../../styles/theme';
 
 function LoginForm({
   username,
@@ -12,14 +13,9 @@ function LoginForm({
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
-  const inputClasses =
-    'w-full p-3 rounded bg-zinc-900 border border-zinc-700 text-white ' +
-    'focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 ' +
-    'focus:outline-none transition-all placeholder-zinc-600';
-
   return (
     <div className="grid place-items-center h-screen bg-zinc-950 px-4">
-      <div className="w-full max-w-md p-4">
+      <div className="w-full max-w-md p-4 animate-in fade-in zoom-in duration-500">
         {/* Header */}
         <div className="text-center mb-10">
           <div className="mb-4">
@@ -34,30 +30,26 @@ function LoginForm({
             Navigate your backlog
           </p>
         </div>
+
         {/* Form */}
         <div className="space-y-6">
           <div>
-            <label className="block text-zinc-500 text-xs font-bold uppercase tracking-wider mb-2">
-              Username
-            </label>
+            <label className={THEME.label}>Username</label>
             <input
               type="text"
               placeholder="Enter your username"
               value={username}
               onChange={(e) => onUsernameChange(e.target.value)}
-              className={inputClasses}
+              className={THEME.input}
             />
           </div>
 
           <div>
-            {/* Flex container */}
             <div className="flex justify-between items-center mb-2">
-              <label className="text-zinc-500 text-xs font-bold uppercase tracking-wider">
-                Password
-              </label>
+              <label className={THEME.label}>Password</label>
               <button
                 onClick={onForgotPassword}
-                className="text-xs text-emerald-500 hover:text-emerald-400 font-bold transition-colors cursor-pointer hover:underline"
+                className="text-[10px] text-emerald-500 hover:text-emerald-400 font-bold uppercase tracking-wider transition-colors cursor-pointer hover:underline"
               >
                 Forgot Password?
               </button>
@@ -70,7 +62,7 @@ function LoginForm({
                 value={password}
                 onChange={(e) => onPasswordChange(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && onLogin()}
-                className={`${inputClasses} pr-10`}
+                className={`${THEME.input} pr-10`}
               />
               <button
                 type="button"
@@ -84,7 +76,7 @@ function LoginForm({
 
           <button
             onClick={onLogin}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-lg shadow-emerald-900/20 active:scale-[0.99] mt-4"
+            className={THEME.button.primary + ' w-full py-3 mt-4'}
           >
             Sign In
           </button>

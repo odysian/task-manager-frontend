@@ -1,14 +1,8 @@
-import {
-  AlertCircle,
-  CheckCircle,
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  Save,
-} from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Save } from 'lucide-react';
 import { useState } from 'react';
-import api from '../../api';
+import { toast } from 'sonner'; //
+import { userService } from '../../services/userService'; //
+import { THEME } from '../../styles/theme'; //
 
 function SecuritySection() {
   const [formData, setFormData] = useState({
@@ -23,12 +17,10 @@ function SecuritySection() {
     confirm: false,
   });
 
-  const [status, setStatus] = useState('idle');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false); //
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (status !== 'idle') setStatus('idle');
   };
 
   const toggleVisibility = (field) => {
@@ -37,61 +29,59 @@ function SecuritySection() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage('');
 
+    // 1. Validation with Toasts
     if (formData.new_password.length < 8) {
-      setErrorMessage('New password must be at least 8 characters long');
-      setStatus('error');
+      toast.error('New password must be at least 8 characters long'); //
       return;
     }
     if (formData.new_password !== formData.confirm_password) {
-      setErrorMessage('New passwords do not match');
-      setStatus('error');
+      toast.error('New passwords do not match'); //
       return;
     }
 
-    setStatus('loading');
+    setLoading(true); //
 
     try {
-      await api.patch('/users/me/change-password', {
+      // 2. Use the Service Layer
+      await userService.changePassword({
         current_password: formData.current_password,
         new_password: formData.new_password,
-      });
+      }); //
 
-      setStatus('success');
+      toast.success('Password changed successfully'); //
+
+      // Clear form on success
       setFormData({
         current_password: '',
         new_password: '',
         confirm_password: '',
       });
-      setTimeout(() => setStatus('idle'), 3000);
     } catch (err) {
-      setStatus('error');
-      setErrorMessage(
-        err.response?.data?.detail || 'Failed to change password'
-      );
+      console.error(err);
+      toast.error(err.response?.data?.detail || 'Failed to change password'); //
+    } finally {
+      setLoading(false); //
     }
   };
 
   const renderPasswordInput = (label, name, visibilityKey, placeholder) => (
     <div>
-      <label className="block text-xs font-bold text-zinc-500 uppercase mb-1">
-        {label}
-      </label>
+      <label className={THEME.label}>{label}</label>
       <div className="relative">
         <input
           type={showPasswords[visibilityKey] ? 'text' : 'password'}
           name={name}
           value={formData[name]}
           onChange={handleChange}
-          className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:border-emerald-500 focus:outline-none transition-colors pr-10" // Added pr-10 for icon space
+          className={THEME.input + ' pr-10'} //
           placeholder={placeholder}
           required
         />
         <button
           type="button"
           onClick={() => toggleVisibility(visibilityKey)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
           tabIndex="-1"
         >
           {showPasswords[visibilityKey] ? (
@@ -139,27 +129,13 @@ function SecuritySection() {
             '••••••••'
           )}
 
-          {status === 'error' && (
-            <div className="flex items-center gap-2 text-red-400 text-sm bg-red-950/20 p-3 rounded-lg border border-red-900/30">
-              <AlertCircle size={16} />
-              {errorMessage}
-            </div>
-          )}
-
-          {status === 'success' && (
-            <div className="flex items-center gap-2 text-emerald-400 text-sm bg-emerald-950/20 p-3 rounded-lg border border-emerald-900/30">
-              <CheckCircle size={16} />
-              Password changed successfully
-            </div>
-          )}
-
           <div className="pt-2">
             <button
               type="submit"
-              disabled={status === 'loading'}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+              className={THEME.button.primary + ' flex items-center gap-2'} //
             >
-              {status === 'loading' ? (
+              {loading ? (
                 <>
                   <Loader2 size={18} className="animate-spin" />
                   Updating...

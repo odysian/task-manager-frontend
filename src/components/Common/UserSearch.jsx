@@ -1,6 +1,7 @@
 import { Loader2, Search, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import api from '../../api';
+import { toast } from 'sonner';
+import { userService } from '../../services/userService';
 
 function UserSearch({ onSelect }) {
   const [query, setQuery] = useState('');
@@ -16,13 +17,11 @@ function UserSearch({ onSelect }) {
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const response = await api.get('/users/search', {
-          params: { query: query },
-        });
+        const response = await userService.searchUsers(query);
         setResults(response.data);
         setShowResults(true);
       } catch (err) {
-        console.error('Search failed:', err);
+        toast.error('Search failed');
         setResults([]);
       } finally {
         setLoading(false);

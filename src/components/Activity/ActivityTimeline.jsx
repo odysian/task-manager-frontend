@@ -1,7 +1,7 @@
-import { ChevronDown, Clock } from 'lucide-react';
+import { ChevronDown, Clock, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import api from '../../api';
+import { taskService } from '../../services/taskService';
 import ActivityItem from './ActivityItem';
 
 function ActivityTimeline({ taskId, isExpanded }) {
@@ -18,7 +18,7 @@ function ActivityTimeline({ taskId, isExpanded }) {
   const fetchTimeline = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/activity/tasks/${taskId}`);
+      const response = await taskService.getTaskActivity(taskId);
       setActivities(response.data);
     } catch (err) {
       console.error('Failed to fetch timeline:', err);
@@ -31,11 +31,9 @@ function ActivityTimeline({ taskId, isExpanded }) {
   if (!isExpanded) return null;
 
   return (
-    // REDUCED: mt-4 pt-4 to mt-2 pt-2
     <div className="mt-2 pt-2 border-t border-zinc-800">
       <button
         onClick={() => setIsTimelineExpanded(!isTimelineExpanded)}
-        // REDUCED: Padding p-2 to py-1 px-2
         className="flex items-center justify-between w-full text-left group hover:bg-zinc-800/30 py-1 px-2 rounded transition-colors"
       >
         <div className="flex items-center gap-2">
@@ -61,7 +59,7 @@ function ActivityTimeline({ taskId, isExpanded }) {
         <div className="mt-2 pl-2">
           {loading && (
             <div className="flex justify-center py-2">
-              <div className="w-4 h-4 border-2 border-zinc-700 border-t-emerald-500 rounded-full animate-spin"></div>
+              <Loader2 className="w-4 h-4 text-emerald-500 animate-spin" />
             </div>
           )}
 
