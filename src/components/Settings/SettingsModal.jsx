@@ -9,9 +9,10 @@ function SettingsModal({ onClose, user, onUserUpdate, avatarUrl }) {
 
   const handleContentClick = (e) => e.stopPropagation();
 
+  // UX IMPROVEMENT: Shorter labels to prevent scrolling on mobile
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'notifications', label: 'Alerts', icon: Bell }, // Changed "Notifications" to "Alerts"
     { id: 'security', label: 'Security', icon: Shield },
   ];
 
@@ -21,9 +22,18 @@ function SettingsModal({ onClose, user, onUserUpdate, avatarUrl }) {
       onClick={onClose}
     >
       <div
-        className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-4xl h-[85vh] md:h-150 flex flex-col md:flex-row overflow-hidden shadow-2xl"
+        className="relative bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-4xl h-[85vh] md:h-150 flex flex-col md:flex-row overflow-hidden shadow-2xl"
         onClick={handleContentClick}
       >
+        {/* CLOSE BUTTON */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white bg-zinc-900/50 hover:bg-zinc-800 rounded-full transition-colors z-20"
+        >
+          <X size={20} />
+        </button>
+
+        {/* SIDEBAR */}
         <div className="w-full md:w-64 bg-zinc-900/50 border-b md:border-b-0 md:border-r border-zinc-800 p-4 flex flex-col shrink-0">
           <h2 className="text-lg font-bold text-white mb-4 md:mb-6 px-2">
             Settings
@@ -35,7 +45,7 @@ function SettingsModal({ onClose, user, onUserUpdate, avatarUrl }) {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap
+                  flex items-center gap-2 md:gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap
                   flex-1 md:flex-none md:w-full justify-center md:justify-start
                   ${
                     activeTab === tab.id
@@ -51,25 +61,9 @@ function SettingsModal({ onClose, user, onUserUpdate, avatarUrl }) {
           </nav>
         </div>
 
+        {/* MAIN CONTENT */}
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
-          <div className="flex items-center justify-between p-6 border-b border-zinc-800 shrink-0">
-            <div>
-              <h3 className="text-xl font-bold text-white capitalize">
-                {activeTab}
-              </h3>
-              <p className="text-sm text-zinc-500">
-                Manage your account settings
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-zinc-500 hover:text-white bg-zinc-900 hover:bg-zinc-800 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-6 pt-6 md:p-8 custom-scrollbar">
             {activeTab === 'profile' && (
               <ProfileSection
                 user={user}

@@ -1,4 +1,4 @@
-import { AlertCircle, Calendar, Camera, CheckCircle, Mail } from 'lucide-react';
+import { AlertCircle, Calendar, Camera, Mail } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { taskService } from '../../services/taskService';
 import { userService } from '../../services/userService';
@@ -21,7 +21,6 @@ function ProfileSection({ user, onUserUpdate, avatarUrl }) {
     year: 'numeric',
   });
 
-  // Sync internal state with prop if it changes globally
   useEffect(() => {
     setCurrentAvatar(avatarUrl);
   }, [avatarUrl]);
@@ -64,19 +63,13 @@ function ProfileSection({ user, onUserUpdate, avatarUrl }) {
 
     try {
       setIsUploading(true);
-
       const response = await userService.updateAvatar(formData);
-
       const fullUrl = `${import.meta.env.VITE_API_URL}${
         response.data.avatar_url
       }`;
-
       const cacheBustedUrl = `${fullUrl}?t=${Date.now()}`;
       setCurrentAvatar(cacheBustedUrl);
-
-      if (onUserUpdate) {
-        onUserUpdate();
-      }
+      if (onUserUpdate) onUserUpdate();
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Failed to upload profile picture');
@@ -92,7 +85,6 @@ function ProfileSection({ user, onUserUpdate, avatarUrl }) {
 
     try {
       await authService.sendVerificationEmail();
-
       setEmailSent(true);
       setTimeout(() => setEmailSent(false), 5000);
     } catch (err) {
@@ -104,10 +96,12 @@ function ProfileSection({ user, onUserUpdate, avatarUrl }) {
   };
 
   return (
-    <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-        <div className="relative group">
-          <div className="w-24 h-24 rounded-full bg-emerald-900/30 border-2 border-emerald-500/50 flex items-center justify-center text-4xl font-bold text-emerald-400 overflow-hidden relative">
+    <div className="space-y-5 animate-in slide-in-from-right-4 duration-300">
+      {/* 1. COMPACT HEADER */}
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
+        <div className="relative group shrink-0">
+          {/* Reduced size w-24 -> w-20 */}
+          <div className="w-26 h-26 rounded-full bg-emerald-900/30 border-2 border-emerald-500/50 flex items-center justify-center text-3xl font-bold text-emerald-400 overflow-hidden relative">
             {currentAvatar ? (
               <img
                 src={currentAvatar}
@@ -120,7 +114,7 @@ function ProfileSection({ user, onUserUpdate, avatarUrl }) {
 
             {isUploading && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               </div>
             )}
           </div>
@@ -128,10 +122,10 @@ function ProfileSection({ user, onUserUpdate, avatarUrl }) {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="absolute bottom-0 right-0 p-2 bg-zinc-800 hover:bg-emerald-600 text-white rounded-full shadow-lg border border-zinc-700 transition-colors cursor-pointer"
+            className="absolute bottom-0 right-0 p-1.5 bg-zinc-800 hover:bg-emerald-600 text-white rounded-full shadow-lg border border-zinc-700 transition-colors cursor-pointer"
             title="Upload Profile Picture"
           >
-            <Camera size={16} />
+            <Camera size={14} />
           </button>
 
           <input
@@ -143,95 +137,92 @@ function ProfileSection({ user, onUserUpdate, avatarUrl }) {
           />
         </div>
 
-        <div className="text-center md:text-left space-y-1">
-          <h3 className="text-2xl font-bold text-white">{user.username}</h3>
-          <div className="flex items-center justify-center md:justify-start gap-2 text-zinc-400 text-sm">
-            <Mail size={14} />
+        <div className="text-center md:text-left space-y-0.5 pt-1">
+          <h3 className="text-xl font-bold text-white">{user.username}</h3>
+          <div className="flex items-center justify-center md:justify-start gap-1.5 text-zinc-400 text-sm">
+            <Mail size={13} />
             <span>{user.email}</span>
           </div>
-          <div className="flex items-center justify-center md:justify-start gap-2 text-zinc-500 text-xs">
-            <Calendar size={12} />
-            <span>Member since {joinDate}</span>
+          <div className="flex items-center justify-center md:justify-start gap-1.5 text-zinc-500 text-xs">
+            <Calendar size={11} />
+            <span>Joined {joinDate}</span>
           </div>
         </div>
       </div>
 
       <div className="border-t border-zinc-800" />
 
-      <div className="bg-zinc-900/50 rounded-xl p-5 border border-zinc-800">
-        <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-4">
-          Account Status
-        </h4>
-
-        {user.email_verified ? (
-          <div className="flex items-center gap-3 text-emerald-400 bg-emerald-950/20 p-3 rounded-lg border border-emerald-900/30">
-            <CheckCircle size={20} />
-            <div>
-              <p className="font-bold text-sm">Email Verified</p>
-              <p className="text-xs text-emerald-500/70">
-                Your account is fully secured.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-4">
+      {/* 2. CONDITIONAL ACCOUNT STATUS (Only show if unverified) */}
+      {!user.email_verified && (
+        <>
+          <div className="bg-amber-950/10 rounded-xl p-4 border border-amber-900/20">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3 text-amber-400">
-                <AlertCircle size={20} />
+                <AlertCircle size={18} className="shrink-0" />
                 <div>
-                  <p className="font-bold text-sm">Email Not Verified</p>
-                  <p className="text-xs text-amber-500/70">
-                    Verify to enable notifications.
+                  <p className="font-bold text-sm leading-none">
+                    Email Not Verified
+                  </p>
+                  <p className="text-xs text-amber-500/60 mt-1">
+                    Verify to enable email notifications.
                   </p>
                 </div>
               </div>
+
               <button
                 onClick={handleSendVerification}
                 disabled={sendingEmail || emailSent}
-                className="px-3 py-1.5 text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded hover:bg-amber-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-3 py-1.5 text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded hover:bg-amber-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 {sendingEmail
                   ? 'Sending...'
                   : emailSent
                   ? 'Sent!'
-                  : 'Send Email'}
+                  : 'Send Verification Email'}
               </button>
             </div>
-            {emailSent && (
-              <div className="p-3 bg-emerald-950/20 border border-emerald-900/30 rounded-lg text-emerald-400 text-xs">
-                ✓ Verification email sent! Check your inbox at {user.email}
-              </div>
-            )}
-            {emailError && (
-              <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-lg text-red-400 text-xs">
-                ⚠️ {emailError}
+
+            {(emailSent || emailError) && (
+              <div
+                className={`mt-3 p-2 rounded text-xs ${
+                  emailSent
+                    ? 'bg-emerald-950/30 text-emerald-400'
+                    : 'bg-red-950/30 text-red-400'
+                }`}
+              >
+                {emailSent ? `✓ Sent to ${user.email}` : `⚠️ ${emailError}`}
               </div>
             )}
           </div>
-        )}
-      </div>
 
+          <div className="border-t border-zinc-800" />
+        </>
+      )}
+
+      {/* 3. COMPACT STATS GRID */}
       <div>
-        <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-4">
+        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">
           Activity Overview
         </h4>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           {loadingStats
             ? [1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-center h-20 animate-pulse"
+                  className="bg-zinc-900 border border-zinc-800 p-3 rounded-lg text-center h-16 animate-pulse"
                 />
               ))
             : stats.map((stat, i) => (
                 <div
                   key={i}
-                  className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-center"
+                  className="bg-zinc-900/50 border border-zinc-800 p-3 rounded-lg text-center hover:bg-zinc-900 transition-colors"
                 >
-                  <p className="text-2xl font-mono text-white mb-1">
+                  <p className="text-xl font-mono text-white leading-tight">
                     {stat.value}
                   </p>
-                  <p className="text-xs text-zinc-500">{stat.label}</p>
+                  <p className="text-[10px] md:text-xs text-zinc-500 mt-1 truncate">
+                    {stat.label}
+                  </p>
                 </div>
               ))}
         </div>

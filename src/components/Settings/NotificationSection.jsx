@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { userService } from '../../services/userService';
-import { THEME } from '../../styles/theme'; // Import theme
+import { THEME } from '../../styles/theme';
 
 function NotificationsSection() {
   const [preferences, setPreferences] = useState(null);
@@ -25,7 +25,6 @@ function NotificationsSection() {
   const fetchPreferences = async () => {
     setLoading(true);
     try {
-      // FIXED: Added parentheses to call the function
       const response = await userService.getPreferences();
       setPreferences(response.data);
     } catch (err) {
@@ -47,7 +46,6 @@ function NotificationsSection() {
       const response = await userService.updatePreferences(preferences);
       setPreferences(response.data);
       setHasChanges(false);
-      // REPLACED: Local state with toast
       toast.success('Preferences saved successfully!');
     } catch (err) {
       console.error('Failed to save preferences:', err);
@@ -107,32 +105,35 @@ function NotificationsSection() {
 
   return (
     <div className="space-y-6">
-      <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-900/30 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <Bell className="text-emerald-400" size={20} />
+      <div className="p-4 md:p-6 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3 md:gap-4">
+            {/* UPDATED: Smaller Bell Container */}
+            <div className="w-10 h-10 rounded-full bg-emerald-900/30 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <Bell className="text-emerald-400" size={18} />
             </div>
             <div>
-              <h4 className="font-bold text-white mb-1">Email Notifications</h4>
-              <p className="text-sm text-zinc-500">
+              <h4 className="font-bold text-white mb-1 text-sm md:text-base">
+                Email Notifications
+              </h4>
+              <p className="text-xs md:text-sm text-zinc-500">
                 Receive updates about your tasks via email
               </p>
               {!preferences.email_verified && (
                 <div className="mt-2 flex items-center gap-2 text-amber-400 text-xs">
                   <Mail size={14} />
-                  <span>Email not verified - notifications disabled</span>
+                  <span>Email not verified</span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Toggle Switch */}
+          {/* UPDATED: Master Toggle Switch (Matches children size + shrink-0) */}
           <button
             onClick={() => handleToggle('email_enabled')}
             disabled={!preferences.email_verified}
             className={`
-              relative w-14 h-7 rounded-full transition-colors
+              relative w-11 h-6 rounded-full transition-colors shrink-0
               ${
                 preferences.email_enabled && preferences.email_verified
                   ? 'bg-emerald-600'
@@ -143,8 +144,8 @@ function NotificationsSection() {
           >
             <span
               className={`
-                absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-transform
-                ${preferences.email_enabled && 'translate-x-7'}
+                absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform
+                ${preferences.email_enabled && 'translate-x-5'}
               `}
             />
           </button>
@@ -165,7 +166,7 @@ function NotificationsSection() {
             key={type.key}
             className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1">
                 <span className="shrink-0">{type.icon}</span>
                 <div>
@@ -208,7 +209,6 @@ function NotificationsSection() {
           <div className="flex-1 text-sm text-zinc-400">
             You have unsaved changes
           </div>
-          {/* UPDATED: Theme Classes */}
           <button
             onClick={handleCancel}
             disabled={saving}
