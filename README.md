@@ -1,93 +1,77 @@
 # FAROS Task Manager - Frontend
 
-The React-based user interface for the **FAROS Task Manager** system.
+React frontend for the FAROS task management app.
 
-**Live Demo:** [https://faros.odysian.dev](https://faros.odysian.dev)
-
-<details>
-  <summary><strong>Watch the Mobile Demo</strong> (Click to Expand)</summary>
-
-  <br>
-
-  https://github.com/user-attachments/assets/5ed8dd35-2fa7-44b5-a72b-0d8d50913cad
-
-  <br>
-</details>
-
---- 
-
-> **Note:** This repository serves as the client-side interface for the [FAROS Backend API](https://github.com/odysian/task-manager-api). The primary focus of this project is the backend engineering, distributed infrastructure, and DevOps practices found in the core API repository. This frontend was built with AI assistance to demonstrate the full functionality of the backend system.
-
----
+**Live Demo:** https://faros.odysian.dev  
+**Backend Repo:** https://github.com/odysian/task-manager-api
 
 ## Tech Stack
 
-* **Framework:** [React 18](https://react.dev/)
-* **Build Tool:** [Vite](https://vitejs.dev/)
-* **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-* **Icons:** [Lucide React](https://lucide.dev/)
-* **HTTP Client:** [Axios](https://axios-http.com/)
-* **Deployment:** AWS S3 + CloudFront (via GitHub Actions)
+- React 18 with Vite
+- Tailwind CSS
+- Axios for API calls
+- Lucide React for icons
+- Deployed on CloudFront + S3
 
----
+## Features
 
-## Setup & Running Locally
+The UI provides:
+- Task dashboard with filtering and search
+- User authentication (login, register, password reset)
+- Task creation and editing
+- File uploads and downloads
+- Comments on tasks
+- Task sharing with permissions
+- Activity timeline
+- User settings and notifications preferences
 
-1. **Clone the repository**
+## Running Locally
+
 ```bash
-git clone https://github.com/odysian/task-manager-frontend.git
+# Clone repository
+git clone https://github.com/odysian/task-manager-frontend
 cd task-manager-frontend
 
-```
-
-
-2. **Install dependencies**
-```bash
+# Install dependencies
 npm install
 
-```
+# Create .env file
+echo "VITE_API_URL=http://localhost:8000" > .env
 
-
-3. **Configure Environment**
-Create a `.env` file in the root directory:
-```properties
-# Points to your local FastAPI backend or production URL
-VITE_API_URL=http://localhost:8000
-
-```
-
-
-4. **Start the development server**
-```bash
+# Start development server
 npm run dev
-
 ```
 
+Visit http://localhost:5173
 
-The app will run at `http://localhost:5173`.
+**Note:** You'll need the backend API running at `http://localhost:8000` (see [backend repo](https://github.com/odysian/task-manager-api) for setup).
 
----
+## Project Structure
 
-## Deployment Infrastructure
+```
+src/
+├── components/
+│   ├── Auth/         # Login, register, password reset
+│   ├── Tasks/        # Task list, forms, dashboard
+│   ├── Settings/     # User settings, notifications
+│   ├── Activity/     # Activity timeline
+│   └── Common/       # Shared components
+├── api.js            # Axios configuration
+├── App.jsx           # Main app component
+└── main.jsx          # Entry point
+```
 
-This frontend is deployed as a static site using a high-performance AWS architecture:
+## Deployment
 
-* **AWS S3:** Hosts the static build files (HTML/CSS/JS).
-* **AWS CloudFront:** Distributes content globally via edge locations.
-* **GitHub Actions:** Automates deployment on push to `main`:
-1. Installs dependencies & builds the project (`npm run build`).
-2. Syncs the `dist/` folder to the S3 bucket.
-3. Invalidates the CloudFront cache to ensure users see the latest version instantly.
+Deployed to AWS using GitHub Actions:
+- Builds React app (`npm run build`)
+- Uploads to S3 bucket
+- Served via CloudFront CDN
+- Deploys automatically on push to `main`
 
----
+## Contact
 
-## Connects To
-
-This frontend consumes the following backend services:
-
-* **Authentication:** JWT-based login, registration, and password resets.
-* **Task Management:** CRUD operations, filtering, and bulk updates.
-* **Real-time Interactions:** Comments and notifications.
-* **File Storage:** Secure file upload/download via AWS S3 Presigned URLs.
-
-For the core engineering work, please visit the **[Backend API Repository](https://github.com/odysian/task-manager-api)**.
+**Chris**
+- GitHub: [@odysian](https://github.com/odysian)
+- Website: https://odysian.dev
+- Email: c.colosimo@odysian.dev
