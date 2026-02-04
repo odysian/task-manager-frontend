@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Info } from 'lucide-react';
 import { useState } from 'react';
 
 function RegisterForm({ onRegister, onSwitchToLogin }) {
@@ -122,6 +122,14 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
                 {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+          </div>
+
+          {/* Cold Start Notice */}
+          <div className="flex items-start gap-2 p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg">
+            <Info size={16} className="text-emerald-500 mt-0.5 shrink-0" />
+            <p className="text-zinc-400 text-xs leading-relaxed">
+              Initial requests may take up to a minute while servers start up.
+            </p>
           </div>
 
           <button
