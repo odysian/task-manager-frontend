@@ -1,7 +1,7 @@
-import { Eye, EyeOff, Info } from 'lucide-react';
+import { Eye, EyeOff, Info, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
-function RegisterForm({ onRegister, onSwitchToLogin }) {
+function RegisterForm({ onRegister, isRegistering, onSwitchToLogin }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,6 +12,7 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = () => {
+    if (isRegistering) return;
     if (!username || !email || !password) {
       setLocalError('All fields are required');
       return;
@@ -62,7 +63,8 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
               placeholder="Choose a username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className={inputClasses}
+              disabled={isRegistering}
+              className={`${inputClasses} ${isRegistering ? 'opacity-50 cursor-not-allowed' : ''}`}
             />
           </div>
 
@@ -75,7 +77,8 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={inputClasses}
+              disabled={isRegistering}
+              className={`${inputClasses} ${isRegistering ? 'opacity-50 cursor-not-allowed' : ''}`}
             />
           </div>
 
@@ -89,12 +92,16 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`${inputClasses} pr-10`}
+                disabled={isRegistering}
+                className={`${inputClasses} pr-10 ${isRegistering ? 'opacity-50 cursor-not-allowed' : ''}`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                disabled={isRegistering}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors ${
+                  isRegistering ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                }`}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -111,13 +118,17 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                className={`${inputClasses} pr-10`}
+                onKeyDown={(e) => e.key === 'Enter' && !isRegistering && handleSubmit()}
+                disabled={isRegistering}
+                className={`${inputClasses} pr-10 ${isRegistering ? 'opacity-50 cursor-not-allowed' : ''}`}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                disabled={isRegistering}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors ${
+                  isRegistering ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                }`}
               >
                 {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -134,9 +145,19 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
 
           <button
             onClick={handleSubmit}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-lg shadow-emerald-900/20 active:scale-[0.99] mt-4"
+            disabled={isRegistering}
+            className={`w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-lg shadow-emerald-900/20 active:scale-[0.99] mt-4 flex items-center justify-center gap-2 ${
+              isRegistering ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
           >
-            Create Account
+            {isRegistering ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                Creating Account...
+              </>
+            ) : (
+              'Create Account'
+            )}
           </button>
         </div>
 
@@ -145,7 +166,10 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
             Already have an account?{' '}
             <button
               onClick={onSwitchToLogin}
-              className="text-emerald-400 hover:text-emerald-300 font-bold hover:underline transition-all cursor-pointer"
+              disabled={isRegistering}
+              className={`text-emerald-400 hover:text-emerald-300 font-bold hover:underline transition-all ${
+                isRegistering ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+              }`}
             >
               Sign In
             </button>

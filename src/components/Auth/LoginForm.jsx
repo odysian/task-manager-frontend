@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Info } from 'lucide-react';
+import { Eye, EyeOff, Info, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { THEME } from '../../styles/theme';
 
@@ -8,6 +8,7 @@ function LoginForm({
   onUsernameChange,
   onPasswordChange,
   onLogin,
+  isLoggingIn,
   onSwitchToRegister,
   onForgotPassword,
 }) {
@@ -40,7 +41,8 @@ function LoginForm({
               placeholder="Enter your username"
               value={username}
               onChange={(e) => onUsernameChange(e.target.value)}
-              className={THEME.input}
+              disabled={isLoggingIn}
+              className={`${THEME.input} ${isLoggingIn ? 'opacity-50 cursor-not-allowed' : ''}`}
             />
           </div>
 
@@ -61,13 +63,17 @@ function LoginForm({
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => onPasswordChange(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && onLogin()}
-                className={`${THEME.input} pr-10`}
+                onKeyDown={(e) => e.key === 'Enter' && !isLoggingIn && onLogin()}
+                disabled={isLoggingIn}
+                className={`${THEME.input} pr-10 ${isLoggingIn ? 'opacity-50 cursor-not-allowed' : ''}`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                disabled={isLoggingIn}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors ${
+                  isLoggingIn ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                }`}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -84,9 +90,19 @@ function LoginForm({
 
           <button
             onClick={onLogin}
-            className={THEME.button.primary + ' w-full py-3 mt-4'}
+            disabled={isLoggingIn}
+            className={`${THEME.button.primary} w-full py-3 mt-4 flex items-center justify-center gap-2 ${
+              isLoggingIn ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
           >
-            Sign In
+            {isLoggingIn ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                Signing In...
+              </>
+            ) : (
+              'Sign In'
+            )}
           </button>
         </div>
 

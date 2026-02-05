@@ -21,6 +21,8 @@ function App() {
   // Lifted state for the login form
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   // Handle URL params for verification/reset flows
   useEffect(() => {
@@ -39,6 +41,7 @@ function App() {
   }, []);
 
   const handleLogin = async () => {
+    setIsLoggingIn(true);
     try {
       // Abstracted API call
       const response = await authService.login({
@@ -53,10 +56,13 @@ function App() {
     } catch (err) {
       console.error('Login Error:', err);
       toast.error(err.response?.data?.detail || 'Login failed');
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
   const handleRegister = async (regUsername, regPassword, regEmail) => {
+    setIsRegistering(true);
     try {
       // Abstracted API call
       await authService.register({
@@ -78,6 +84,8 @@ function App() {
     } catch (err) {
       console.error('Registration failed:', err);
       toast.error(err.response?.data?.detail || 'Registration failed');
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -139,6 +147,7 @@ function App() {
       content = (
         <RegisterForm
           onRegister={handleRegister}
+          isRegistering={isRegistering}
           onSwitchToLogin={() => setCurrentView('login')}
         />
       );
@@ -151,6 +160,7 @@ function App() {
           onUsernameChange={setUsername}
           onPasswordChange={setPassword}
           onLogin={handleLogin}
+          isLoggingIn={isLoggingIn}
           onSwitchToRegister={() => setCurrentView('register')}
           onForgotPassword={() => setCurrentView('forgot-password')}
         />
