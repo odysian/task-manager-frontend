@@ -30,19 +30,42 @@ function LandingPage({ onNavigateToLogin, onNavigateToRegister }) {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
-            <button
-              onClick={onNavigateToLogin}
-              className={`${THEME.button.primary} w-full sm:w-auto px-8 py-4 text-lg`}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={onNavigateToRegister}
-              className={`${THEME.button.secondary} w-full sm:w-auto px-8 py-4 text-lg`}
-            >
-              Get Started
-            </button>
+          <div className="mb-20 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <button
+                onClick={onNavigateToLogin}
+                className={`${THEME.button.primary} w-full sm:w-auto px-8 py-4 text-lg`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={onNavigateToRegister}
+                className={`${THEME.button.secondary} w-full sm:w-auto px-8 py-4 text-lg`}
+              >
+                Get Started
+              </button>
+            </div>
+            <div className="mt-4 text-sm text-zinc-400">
+              <p className="mb-1">Project repos:</p>
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4">
+                <a
+                  href="https://github.com/odysian/task-manager-api"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+                >
+                  Backend
+                </a>
+                <a
+                  href="https://github.com/odysian/task-manager-frontend"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+                >
+                  Frontend
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
