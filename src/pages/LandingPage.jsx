@@ -1,28 +1,18 @@
 import { useEffect } from 'react';
 import { FileText, ListChecks, Users } from 'lucide-react';
+import { healthService } from '../services/healthService';
 import { THEME } from '../styles/theme';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://54.80.178.193:8000';
 
 function LandingPage({ onNavigateToLogin, onNavigateToRegister }) {
   useEffect(() => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const warmupUrl = `${API_URL.replace(/\/+$/, '')}/`;
 
-    // Fire a lightweight request so free-tier Render can wake up sooner.
-    fetch(warmupUrl, {
-      method: 'GET',
-      mode: 'no-cors',
-      cache: 'no-store',
-      signal: controller.signal,
-    })
-      .catch(() => {})
-      .finally(() => clearTimeout(timeoutId));
+    healthService
+      .warmUpBackend({ signal: controller.signal })
+      .catch(() => null);
 
     return () => {
       controller.abort();
-      clearTimeout(timeoutId);
     };
   }, []);
 
